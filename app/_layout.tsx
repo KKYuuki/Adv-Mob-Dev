@@ -1,8 +1,8 @@
 import "react-native-gesture-handler";
 
 import { Ionicons } from "@expo/vector-icons";
-import type { ComponentProps } from "react";
 import { Drawer } from "expo-router/drawer";
+import type { ComponentProps } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
@@ -18,6 +18,8 @@ const drawerScreens = [
   { name: "library", title: "Your Library", icon: "albums-outline" },
   { name: "playlists", title: "Playlists", icon: "musical-notes-outline" },
   { name: "premium", title: "Premium", icon: "card-outline" },
+  { name: "profile", title: "Profile", icon: "person-outline" },
+  { name: "settings", title: "Settings", icon: "settings-outline" },
 ] as const satisfies ReadonlyArray<{
   name: string;
   title: string;
