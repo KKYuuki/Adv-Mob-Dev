@@ -17,6 +17,7 @@ const drawerScreens = [
   { name: "search", title: "Search", icon: "search-outline" },
   { name: "library", title: "Your Library", icon: "albums-outline" },
   { name: "playlists", title: "Playlists", icon: "musical-notes-outline" },
+  { name: "playlist", title: "Playlist Builder", icon: "build-outline" },
   { name: "premium", title: "Premium", icon: "card-outline" },
   { name: "profile", title: "Profile", icon: "person-outline" },
   { name: "settings", title: "Settings", icon: "settings-outline" },
