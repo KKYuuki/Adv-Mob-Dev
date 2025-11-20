@@ -11,25 +11,27 @@ import {
 } from "react-native";
 import TabBar from "../components/TabBar";
 import { playlists } from "../data/playlists";
+import { useTheme } from "../hooks/useTheme";
 
 export default function PlaylistsScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const handleSelect = (playlistId: string) => {
     router.push({ pathname: "/playlist/[id]", params: { id: playlistId } } as never);
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.kicker}>Collections</Text>
-            <Text style={styles.title}>Your Playlists</Text>
+            <Text style={[styles.kicker, { color: colors.subText }]}>Collections</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Your Playlists</Text>
           </View>
-          <Pressable style={styles.seeAllButton} onPress={() => router.push("/library" as never)}>
-            <Text style={styles.seeAllText}>Library</Text>
+          <Pressable style={[styles.seeAllButton, { borderColor: colors.secondary }]} onPress={() => router.push("/library" as never)}>
+            <Text style={[styles.seeAllText, { color: colors.text }]}>Library</Text>
           </Pressable>
         </View>
 
@@ -37,16 +39,16 @@ export default function PlaylistsScreen() {
           data={playlists}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.secondary }]} />}
           renderItem={({ item }) => (
             <Pressable style={styles.row} onPress={() => handleSelect(item.id)}>
               <Image source={{ uri: item.artwork }} style={styles.coverArt} />
               <View style={styles.rowCopy}>
-                <Text style={styles.rowTitle}>{item.title}</Text>
-                <Text style={styles.rowSubtitle} numberOfLines={2}>
+                <Text style={[styles.rowTitle, { color: colors.text }]}>{item.title}</Text>
+                <Text style={[styles.rowSubtitle, { color: colors.subText }]} numberOfLines={2}>
                   {item.description}
                 </Text>
-                <Text style={styles.meta}>{item.followers} followers • {item.mood}</Text>
+                <Text style={[styles.meta, { color: colors.subText }]}>{item.followers} followers • {item.mood}</Text>
               </View>
             </Pressable>
           )}
@@ -62,11 +64,9 @@ export default function PlaylistsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#050505",
   },
   container: {
     flex: 1,
-    backgroundColor: "#050505",
   },
   header: {
     flexDirection: "row",
@@ -77,26 +77,22 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   kicker: {
-    color: "#9ca3af",
     fontSize: 14,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   title: {
-    color: "#fff",
     fontSize: 30,
     fontWeight: "800",
     marginTop: 4,
   },
   seeAllButton: {
     borderWidth: 1,
-    borderColor: "#262626",
     borderRadius: 999,
     paddingHorizontal: 18,
     paddingVertical: 8,
   },
   seeAllText: {
-    color: "#fff",
     fontWeight: "600",
   },
   listContent: {
@@ -105,7 +101,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: "#1f1f1f",
   },
   row: {
     flexDirection: "row",
@@ -123,16 +118,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   rowTitle: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "700",
   },
   rowSubtitle: {
-    color: "#d4d4d4",
     fontSize: 14,
   },
   meta: {
-    color: "#9ca3af",
     fontSize: 13,
   },
 });

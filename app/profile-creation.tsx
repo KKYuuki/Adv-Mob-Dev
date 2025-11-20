@@ -5,18 +5,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, FadeIn, withSequence } from 'react-native-reanimated';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../hooks/useTheme';
 
 const GENRES = ['Pop', 'Rock', 'Jazz', 'Classical', 'Hip-Hop'];
 
-const ProfilePreview = React.memo(({ username, email, genre }: { username: string; email: string; genre: string }) => {
+const ProfilePreview = React.memo(({ username, email, genre, colors }: { username: string; email: string; genre: string; colors: any }) => {
   const imageUrl = `https://via.placeholder.com/100?text=${genre || 'Genre'}`;
 
   return (
-    <Animated.View entering={FadeIn} style={styles.previewContainer}>
-      <Image source={{ uri: imageUrl }} style={styles.profileImage} />
-      <Text style={styles.previewText}>Username: {username}</Text>
-      <Text style={styles.previewText}>Email: {email}</Text>
-      <Text style={styles.previewText}>Genre: {genre}</Text>
+    <Animated.View entering={FadeIn} style={[styles.previewContainer, { backgroundColor: colors.card }]}>
+      <Image source={{ uri: imageUrl }} style={[styles.profileImage, { borderColor: colors.primary }]} />
+      <Text style={[styles.previewText, { color: colors.text }]}>Username: {username}</Text>
+      <Text style={[styles.previewText, { color: colors.text }]}>Email: {email}</Text>
+      <Text style={[styles.previewText, { color: colors.text }]}>Genre: {genre}</Text>
     </Animated.View>
   );
 });
@@ -30,6 +31,7 @@ const ProfileCreationScreen = () => {
 
   const usernameShake = useSharedValue(0);
   const emailShake = useSharedValue(0);
+  const { colors } = useTheme();
 
   useEffect(() => {
     const loadFormData = async () => {
@@ -112,14 +114,14 @@ const ProfileCreationScreen = () => {
   }));
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Your Profile</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Create Your Profile</Text>
 
       <Animated.View style={usernameAnimatedStyle}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Username"
-          placeholderTextColor="#b3b3b3"
+          placeholderTextColor={colors.subText}
           value={username}
           onChangeText={(text) => {
             setUsername(text);
@@ -127,13 +129,13 @@ const ProfileCreationScreen = () => {
           }}
         />
       </Animated.View>
-      {errors.username ? <Animated.Text entering={FadeIn} style={styles.errorText}>{errors.username}</Animated.Text> : null}
+      {errors.username ? <Animated.Text entering={FadeIn} style={[styles.errorText, { color: colors.error }]}>{errors.username}</Animated.Text> : null}
 
       <Animated.View style={emailAnimatedStyle}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
           placeholder="Email"
-          placeholderTextColor="#b3b3b3"
+          placeholderTextColor={colors.subText}
           value={email}
           onChangeText={(text) => {
             setEmail(text);
@@ -142,9 +144,9 @@ const ProfileCreationScreen = () => {
           keyboardType="email-address"
         />
       </Animated.View>
-      {errors.email ? <Animated.Text entering={FadeIn} style={styles.errorText}>{errors.email}</Animated.Text> : null}
+      {errors.email ? <Animated.Text entering={FadeIn} style={[styles.errorText, { color: colors.error }]}>{errors.email}</Animated.Text> : null}
 
-      <View style={styles.pickerContainer}>
+      <View style={[styles.pickerContainer, { backgroundColor: colors.card }]}>
         <Picker
           selectedValue={genre}
           onValueChange={(itemValue) => {
@@ -153,23 +155,23 @@ const ProfileCreationScreen = () => {
               setErrors((e) => ({ ...e, genre: '' }));
             }
           }}
-          style={styles.picker}
-          dropdownIconColor="#fff"
+          style={[styles.picker, { color: colors.text }]}
+          dropdownIconColor={colors.text}
         >
-          <Picker.Item label="Select a Genre" value="" color="#b3b3b3" />
+          <Picker.Item label="Select a Genre" value="" color={colors.subText} />
           {GENRES.map((g) => (
-            <Picker.Item key={g} label={g} value={g} color="#000" />
+            <Picker.Item key={g} label={g} value={g} color={colors.text} />
           ))}
         </Picker>
       </View>
-      {errors.genre ? <Animated.Text entering={FadeIn} style={styles.errorText}>{errors.genre}</Animated.Text> : null}
+      {errors.genre ? <Animated.Text entering={FadeIn} style={[styles.errorText, { color: colors.error }]}>{errors.genre}</Animated.Text> : null}
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Create Profile</Text>
+      <TouchableOpacity style={[styles.submitButton, { backgroundColor: colors.primary }]} onPress={handleSubmit}>
+        <Text style={[styles.submitButtonText, { color: colors.text }]}>Create Profile</Text>
       </TouchableOpacity>
 
       {(username || email || genre) && (
-        <ProfilePreview username={username} email={email} genre={genre} />
+        <ProfilePreview username={username} email={email} genre={genre} colors={colors} />
       )}
     </View>
   );
@@ -179,52 +181,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#121212',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
     marginBottom: 30,
     textAlign: 'center',
   },
   input: {
-    backgroundColor: '#282828',
     borderRadius: 5,
     padding: 15,
-    color: '#fff',
     fontSize: 16,
     marginBottom: 10,
   },
   errorText: {
-    color: '#f44336',
     marginBottom: 10,
     marginLeft: 5,
   },
   pickerContainer: {
-    backgroundColor: '#282828',
     borderRadius: 5,
     marginBottom: 20,
   },
   picker: {
-    color: '#fff',
   },
   submitButton: {
-    backgroundColor: '#1DB954',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
   },
   submitButtonText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
   previewContainer: {
     marginTop: 30,
     padding: 20,
-    backgroundColor: '#1e1e1e',
     borderRadius: 10,
     alignItems: 'center',
   },
@@ -233,9 +225,9 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 15,
+    borderWidth: 3,
   },
   previewText: {
-    color: '#fff',
     fontSize: 16,
     marginBottom: 5,
   },

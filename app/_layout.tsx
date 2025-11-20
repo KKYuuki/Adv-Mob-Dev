@@ -4,6 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Drawer } from "expo-router/drawer";
 import type { ComponentProps } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Provider } from "react-redux";
+import { store } from "../store";
 
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -30,66 +32,68 @@ const drawerScreens = [
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Drawer
-        screenOptions={{
-          headerShown: false,
-          drawerType: "slide",
-          swipeEnabled: true,
-          swipeEdgeWidth: 70,
-          swipeMinDistance: 20,
-          drawerActiveTintColor: "#1DB954",
-          drawerInactiveTintColor: "#d4d4d4",
-          overlayColor: "rgba(0,0,0,0.45)",
-          drawerStyle: {
-            backgroundColor: "#181818",
-            width: 260,
-          },
-          sceneContainerStyle: {
-            backgroundColor: "#000",
-          },
-        }}
-      >
-        <Drawer.Screen
-          name="index"
-          options={{
-            drawerItemStyle: { display: "none" },
+    <Provider store={store}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Drawer
+          screenOptions={{
+            headerShown: false,
+            drawerType: "slide",
+            swipeEnabled: true,
+            swipeEdgeWidth: 70,
+            swipeMinDistance: 20,
+            drawerActiveTintColor: "#1DB954",
+            drawerInactiveTintColor: "#d4d4d4",
+            overlayColor: "rgba(0,0,0,0.45)",
+            drawerStyle: {
+              backgroundColor: "#181818",
+              width: 260,
+            },
+            sceneContainerStyle: {
+              backgroundColor: "#000",
+            },
           }}
-        />
-
-        {drawerScreens.map(({ name, title, icon }) => (
+        >
           <Drawer.Screen
-            key={name}
-            name={name}
+            name="index"
             options={{
-              title,
-              drawerLabel: title,
-              drawerIcon: ({ color, size }: DrawerIconProps) => (
-                <Ionicons name={icon} size={size ?? 20} color={color ?? "#fff"} />
-              ),
+              drawerItemStyle: { display: "none" },
             }}
           />
-        ))}
 
-        <Drawer.Screen
-          name="login"
-          options={{
-            drawerItemStyle: { display: "none" },
-          }}
-        />
-        <Drawer.Screen
-          name="signup"
-          options={{
-            drawerItemStyle: { display: "none" },
-          }}
-        />
-        <Drawer.Screen
-          name="playlist/[id]"
-          options={{
-            drawerItemStyle: { display: "none" },
-          }}
-        />
-      </Drawer>
-    </GestureHandlerRootView>
+          {drawerScreens.map(({ name, title, icon }) => (
+            <Drawer.Screen
+              key={name}
+              name={name}
+              options={{
+                title,
+                drawerLabel: title,
+                drawerIcon: ({ color, size }: DrawerIconProps) => (
+                  <Ionicons name={icon} size={size ?? 20} color={color ?? "#fff"} />
+                ),
+              }}
+            />
+          ))}
+
+          <Drawer.Screen
+            name="login"
+            options={{
+              drawerItemStyle: { display: "none" },
+            }}
+          />
+          <Drawer.Screen
+            name="signup"
+            options={{
+              drawerItemStyle: { display: "none" },
+            }}
+          />
+          <Drawer.Screen
+            name="playlist/[id]"
+            options={{
+              drawerItemStyle: { display: "none" },
+            }}
+          />
+        </Drawer>
+      </GestureHandlerRootView>
+    </Provider>
   );
 }

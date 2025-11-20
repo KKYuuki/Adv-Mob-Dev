@@ -9,11 +9,13 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useTheme } from "../hooks/useTheme";
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { colors } = useTheme();
 
   const handleLogin = () => {
     // Placeholder for auth integration
@@ -22,23 +24,23 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
       <View>
-        <Text style={styles.kicker}>Log in</Text>
-        <Text style={styles.title}>Welcome back</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.kicker, { color: colors.primary }]}>Log in</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Welcome back</Text>
+        <Text style={[styles.subtitle, { color: colors.subText }]}>
           Enter your credentials to continue listening.
         </Text>
       </View>
 
       <View style={styles.form}>
         <View>
-          <Text style={styles.label}>Email address</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Email address</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
             placeholder="name@email.com"
-            placeholderTextColor="#7a7a7a"
+            placeholderTextColor={colors.subText}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -46,18 +48,18 @@ export default function LoginScreen() {
           />
         </View>
         <View>
-          <Text style={styles.label}>Password</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Password</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
             placeholder="Your password"
-            placeholderTextColor="#7a7a7a"
+            placeholderTextColor={colors.subText}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
         </View>
-        <Pressable style={styles.primaryButton} onPress={handleLogin}>
-          <Text style={styles.primaryLabel}>Log in</Text>
+        <Pressable style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleLogin}>
+          <Text style={[styles.primaryLabel, { color: colors.background }]}>Log in</Text>
         </Pressable>
       </View>
 
@@ -66,8 +68,8 @@ export default function LoginScreen() {
           onPress={() => router.push({ pathname: "/signup" })}
           style={styles.linkRow}
         >
-          <Text style={styles.footerText}>Don’t have an account?</Text>
-          <Text style={styles.linkText}>Sign up free</Text>
+          <Text style={[styles.footerText, { color: colors.subText }]}>Don’t have an account?</Text>
+          <Text style={[styles.linkText, { color: colors.text }]}>Sign up free</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -77,25 +79,21 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 32,
     justifyContent: "space-between",
   },
   kicker: {
-    color: "#1DB954",
     fontWeight: "700",
     fontSize: 16,
     marginBottom: 8,
   },
   title: {
-    color: "#fff",
     fontSize: 32,
     fontWeight: "800",
   },
   subtitle: {
-    color: "#b3b3b3",
     marginTop: 8,
     fontSize: 16,
   },
@@ -103,27 +101,22 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   label: {
-    color: "#fff",
     marginBottom: 8,
     fontWeight: "600",
   },
   input: {
-    backgroundColor: "#1e1e1e",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    color: "#fff",
     fontSize: 16,
   },
   primaryButton: {
-    backgroundColor: "#1DB954",
     borderRadius: 999,
     paddingVertical: 16,
     alignItems: "center",
     marginTop: 12,
   },
   primaryLabel: {
-    color: "#000",
     fontWeight: "700",
     fontSize: 16,
   },
@@ -131,11 +124,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footerText: {
-    color: "#b3b3b3",
     marginRight: 6,
   },
   linkText: {
-    color: "#fff",
     fontWeight: "700",
   },
   linkRow: {

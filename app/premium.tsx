@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
 import TabBar from "../components/TabBar";
+import { useTheme } from "../hooks/useTheme";
 
 const benefits = [
   { id: "1", label: "Ad-free music listening", icon: "volume-high-outline" },
@@ -10,35 +11,36 @@ const benefits = [
 ];
 
 export default function PremiumScreen() {
+  const { colors } = useTheme();
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.hero}>
-            <Text style={styles.kicker}>Go Premium</Text>
-            <Text style={styles.title}>Experience Spotify without limits</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.kicker, { color: colors.primary }]}>Go Premium</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Experience Spotify without limits</Text>
+            <Text style={[styles.subtitle, { color: colors.subText }]}>
               Upgrade for uninterrupted music, downloads, and the best possible sound quality.
             </Text>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.planLabel}>Individual</Text>
-            <Text style={styles.price}>$9.99</Text>
-            <Text style={styles.perMonth}>per month after trial</Text>
+          <View style={[styles.card, { backgroundColor: colors.card }]}>
+            <Text style={[styles.planLabel, { color: colors.text }]}>Individual</Text>
+            <Text style={[styles.price, { color: colors.text }]}>$9.99</Text>
+            <Text style={[styles.perMonth, { color: colors.subText }]}>per month after trial</Text>
             <View style={styles.benefits}>
               {benefits.map((benefit) => (
                 <View key={benefit.id} style={styles.benefitRow}>
-                  <Ionicons name={benefit.icon as any} size={18} color="#1DB954" />
-                  <Text style={styles.benefitText}>{benefit.label}</Text>
+                  <Ionicons name={benefit.icon as any} size={18} color={colors.primary} />
+                  <Text style={[styles.benefitText, { color: colors.text }]}>{benefit.label}</Text>
                 </View>
               ))}
             </View>
-            <View style={styles.primaryButton}>
-              <Text style={styles.primaryLabel}>Start free trial</Text>
+            <View style={[styles.primaryButton, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.primaryLabel, { color: colors.background }]}>Start free trial</Text>
             </View>
-            <Text style={styles.terms}>Terms and conditions apply. Cancel anytime.</Text>
+            <Text style={[styles.terms, { color: colors.subText }]}>Terms and conditions apply. Cancel anytime.</Text>
           </View>
         </ScrollView>
         <TabBar />
@@ -50,11 +52,9 @@ export default function PremiumScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#050505",
   },
   container: {
     flex: 1,
-    backgroundColor: "#050505",
   },
   content: {
     paddingHorizontal: 20,
@@ -66,37 +66,30 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   kicker: {
-    color: "#1DB954",
     fontWeight: "700",
     fontSize: 16,
   },
   title: {
-    color: "#fff",
     fontSize: 30,
     fontWeight: "800",
   },
   subtitle: {
-    color: "#b3b3b3",
     lineHeight: 20,
   },
   card: {
-    backgroundColor: "#181818",
     borderRadius: 24,
     padding: 24,
     gap: 16,
   },
   planLabel: {
-    color: "#fff",
     fontSize: 20,
     fontWeight: "700",
   },
   price: {
-    color: "#fff",
     fontSize: 40,
     fontWeight: "900",
   },
   perMonth: {
-    color: "#b3b3b3",
   },
   benefits: {
     gap: 12,
@@ -108,11 +101,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   benefitText: {
-    color: "#fff",
     fontSize: 16,
   },
   primaryButton: {
-    backgroundColor: "#1DB954",
     borderRadius: 999,
     paddingVertical: 14,
     alignItems: "center",
@@ -120,11 +111,9 @@ const styles = StyleSheet.create({
   },
   primaryLabel: {
     fontWeight: "700",
-    color: "#000",
     fontSize: 16,
   },
   terms: {
-    color: "#9ca3af",
     fontSize: 12,
     textAlign: "center",
   },

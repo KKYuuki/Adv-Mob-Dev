@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '../hooks/useTheme';
 
 const ProfileScreen = () => {
   const router = useRouter();
+  const { colors } = useTheme();
 
   // Mock user data
   const user = {
@@ -21,13 +23,13 @@ const ProfileScreen = () => {
   ];
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.secondary }]}>
         <Image source={{ uri: user.avatar }} style={styles.avatar} />
-        <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.email}>{user.email}</Text>
-        <View style={styles.planBadge}>
-          <Text style={styles.planText}>{user.plan}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{user.name}</Text>
+        <Text style={[styles.email, { color: colors.subText }]}>{user.email}</Text>
+        <View style={[styles.planBadge, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.planText, { color: colors.background }]}>{user.plan}</Text>
         </View>
       </View>
 
@@ -35,18 +37,18 @@ const ProfileScreen = () => {
         {menuItems.map((item, index) => (
           <TouchableOpacity 
             key={index} 
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: colors.secondary }]}
             onPress={() => router.push(`/${item.screen}`)}
           >
-            <Ionicons name={item.icon as any} size={24} color="#fff" />
-            <Text style={styles.menuText}>{item.label}</Text>
-            <Ionicons name="chevron-forward" size={20} color="#666" style={styles.arrowIcon} />
+            <Ionicons name={item.icon as any} size={24} color={colors.text} />
+            <Text style={[styles.menuText, { color: colors.text }]}>{item.label}</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.subText} style={styles.arrowIcon} />
           </TouchableOpacity>
         ))}
       </View>
 
-      <TouchableOpacity style={styles.logoutButton}>
-        <Text style={styles.logoutText}>Log Out</Text>
+      <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.card }]}>
+        <Text style={[styles.logoutText, { color: colors.text }]}>Log Out</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -55,14 +57,12 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
   },
   header: {
     alignItems: 'center',
     padding: 20,
     paddingTop: 40,
     borderBottomWidth: 1,
-    borderBottomColor: '#282828',
   },
   avatar: {
     width: 120,
@@ -71,24 +71,20 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   name: {
-    color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 5,
   },
   email: {
-    color: '#b3b3b3',
     fontSize: 16,
     marginBottom: 15,
   },
   planBadge: {
-    backgroundColor: '#1DB954',
     paddingHorizontal: 15,
     paddingVertical: 5,
     borderRadius: 15,
   },
   planText: {
-    color: '#fff',
     fontWeight: '600',
   },
   menuContainer: {
@@ -99,10 +95,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#282828',
   },
   menuText: {
-    color: '#fff',
     fontSize: 16,
     marginLeft: 15,
     flex: 1,
@@ -113,12 +107,10 @@ const styles = StyleSheet.create({
   logoutButton: {
     margin: 20,
     padding: 15,
-    backgroundColor: '#282828',
     borderRadius: 30,
     alignItems: 'center',
   },
   logoutText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

@@ -14,12 +14,14 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { useTheme } from "../hooks/useTheme";
 
 export default function SignupScreen() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { colors } = useTheme();
 
   const handleSignup = () => {
     // Placeholder for auth integration
@@ -27,8 +29,8 @@ export default function SignupScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -40,31 +42,31 @@ export default function SignupScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View>
-              <Text style={styles.kicker}>Sign up</Text>
-              <Text style={styles.title}>Create your account</Text>
-              <Text style={styles.subtitle}>
+              <Text style={[styles.kicker, { color: colors.primary }]}>Sign up</Text>
+              <Text style={[styles.title, { color: colors.text }]}>Create your account</Text>
+              <Text style={[styles.subtitle, { color: colors.subText }]}>
                 Join millions of listeners and stream instantly.
               </Text>
             </View>
 
             <View style={styles.form}>
               <View>
-                <Text style={styles.label}>Full name</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Full name</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
                   placeholder="Jane Smith"
-                  placeholderTextColor="#7a7a7a"
+                  placeholderTextColor={colors.subText}
                   value={name}
                   onChangeText={setName}
                   returnKeyType="next"
                 />
               </View>
               <View>
-                <Text style={styles.label}>Email address</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Email address</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
                   placeholder="name@email.com"
-                  placeholderTextColor="#7a7a7a"
+                  placeholderTextColor={colors.subText}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
@@ -74,26 +76,26 @@ export default function SignupScreen() {
                 />
               </View>
               <View>
-                <Text style={styles.label}>Password</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Password</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
                   placeholder="Minimum 8 characters"
-                  placeholderTextColor="#7a7a7a"
+                  placeholderTextColor={colors.subText}
                   secureTextEntry
                   value={password}
                   onChangeText={setPassword}
                   returnKeyType="done"
                 />
               </View>
-              <Pressable style={styles.primaryButton} onPress={handleSignup}>
-                <Text style={styles.primaryLabel}>Sign up free</Text>
+              <Pressable style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleSignup}>
+                <Text style={[styles.primaryLabel, { color: colors.background }]}>Sign up free</Text>
               </Pressable>
             </View>
 
             <View style={styles.footer}>
               <Pressable onPress={() => router.back()} style={styles.linkRow}>
-                <Text style={styles.footerText}>Already have an account?</Text>
-                <Text style={styles.linkText}>Log in</Text>
+                <Text style={[styles.footerText, { color: colors.subText }]}>Already have an account?</Text>
+                <Text style={[styles.linkText, { color: colors.text }]}>Log in</Text>
               </Pressable>
             </View>
           </ScrollView>
@@ -106,7 +108,6 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#121212",
   },
   container: {
     flex: 1,
@@ -118,18 +119,15 @@ const styles = StyleSheet.create({
     gap: 32,
   },
   kicker: {
-    color: "#1DB954",
     fontWeight: "700",
     fontSize: 16,
     marginBottom: 8,
   },
   title: {
-    color: "#fff",
     fontSize: 32,
     fontWeight: "800",
   },
   subtitle: {
-    color: "#b3b3b3",
     marginTop: 8,
     fontSize: 16,
   },
@@ -137,27 +135,22 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   label: {
-    color: "#fff",
     marginBottom: 8,
     fontWeight: "600",
   },
   input: {
-    backgroundColor: "#1e1e1e",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    color: "#fff",
     fontSize: 16,
   },
   primaryButton: {
-    backgroundColor: "#1DB954",
     borderRadius: 999,
     paddingVertical: 16,
     alignItems: "center",
     marginTop: 12,
   },
   primaryLabel: {
-    color: "#000",
     fontWeight: "700",
     fontSize: 16,
   },
@@ -166,11 +159,9 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   footerText: {
-    color: "#b3b3b3",
     marginRight: 6,
   },
   linkText: {
-    color: "#fff",
     fontWeight: "700",
   },
   linkRow: {

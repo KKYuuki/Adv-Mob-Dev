@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
 import type { ComponentProps } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTheme } from "../hooks/useTheme";
 
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
 interface TabConfig {
@@ -40,9 +41,10 @@ const tabs = [
 export default function TabBar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: colors.secondary }]}>
       {tabs.map((tab) => {
         const isActive = pathname === tab.path;
         return (
@@ -58,9 +60,9 @@ export default function TabBar() {
             <Ionicons
               name={isActive ? tab.activeIcon : tab.icon}
               size={22}
-              color={isActive ? "#1DB954" : "#d4d4d4"}
+              color={isActive ? colors.primary : colors.subText}
             />
-            <Text style={[styles.label, isActive && styles.labelActive]}>
+            <Text style={[styles.label, { color: isActive ? colors.text : colors.subText }]}>
               {tab.label}
             </Text>
           </Pressable>
@@ -73,12 +75,10 @@ export default function TabBar() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    backgroundColor: "#0c0c0c",
     paddingHorizontal: 24,
     paddingTop: 10,
     paddingBottom: 18,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#1f1f1f",
   },
   tab: {
     flex: 1,
@@ -86,11 +86,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   label: {
-    color: "#9ca3af",
     fontSize: 12,
     fontWeight: "600",
-  },
-  labelActive: {
-    color: "#fff",
   },
 });

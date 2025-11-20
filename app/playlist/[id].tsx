@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { getPlaylistById } from "../../data/playlists";
+import { useTheme } from '../hooks/useTheme';
 
 export default function PlaylistDetailScreen() {
   const router = useRouter();

@@ -12,6 +12,8 @@ import {
   View,
 } from "react-native";
 import TabBar from "../components/TabBar";
+import { useTheme } from "../hooks/useTheme";
+import { useNavigation } from "@react-navigation/native";
 
 interface PlaylistCard {
   id: string;
@@ -24,6 +26,8 @@ export default function HomeScreen() {
   const router = useRouter();
   const handleNavigate = (path: string) => router.push(path as never);
   const filters = useMemo(() => ["All", "Music", "Podcasts"], []);
+  const { colors } = useTheme();
+  const navigation = useNavigation();
 
   const pinnedTiles: PlaylistCard[] = useMemo(
     () => [
@@ -110,26 +114,28 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarInitial}>A</Text>
-            </View>
+            <Pressable onPress={() => navigation.openDrawer()}>
+              <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+                <Text style={[styles.avatarInitial, { color: colors.background }]}>A</Text>
+              </View>
+            </Pressable>
             <View style={styles.headerActions}>
-              <Pressable style={styles.iconButton}>
-                <Ionicons name="notifications-outline" size={20} color="#fff" />
+              <Pressable style={[styles.iconButton, { backgroundColor: colors.card }]}>
+                <Ionicons name="notifications-outline" size={20} color={colors.text} />
               </Pressable>
-              <Pressable style={styles.iconButton}>
-                <Ionicons name="timer-outline" size={20} color="#fff" />
+              <Pressable style={[styles.iconButton, { backgroundColor: colors.card }]}>
+                <Ionicons name="timer-outline" size={20} color={colors.text} />
               </Pressable>
-              <Pressable style={styles.iconButton}>
-                <Ionicons name="settings-outline" size={20} color="#fff" />
+              <Pressable style={[styles.iconButton, { backgroundColor: colors.card }]}>
+                <Ionicons name="settings-outline" size={20} color={colors.text} />
               </Pressable>
             </View>
           </View>
@@ -140,7 +146,7 @@ export default function HomeScreen() {
                 key={filter}
               style={[
                 styles.filterChip,
-                index === 0 && styles.filterChipActive,
+                { backgroundColor: index === 0 ? colors.primary : colors.card },
               ]}
               onPress={() => {
                 if (index > 0) {
@@ -151,7 +157,7 @@ export default function HomeScreen() {
               <Text
                 style={[
                   styles.filterLabel,
-                  index === 0 && styles.filterLabelActive,
+                  { color: index === 0 ? colors.background : colors.subText },
                 ]}
               >
                 {filter}
@@ -162,13 +168,13 @@ export default function HomeScreen() {
 
         <View style={styles.pinnedGrid}>
           {pinnedTiles.map((tile) => (
-            <Pressable key={tile.id} style={styles.pinnedCard}>
+            <Pressable key={tile.id} style={[styles.pinnedCard, { backgroundColor: colors.card }]}>
               <Image source={{ uri: tile.artwork }} style={styles.pinnedArt} />
               <View style={styles.pinnedCopy}>
-                <Text numberOfLines={1} style={styles.pinnedTitle}>
+                <Text numberOfLines={1} style={[styles.pinnedTitle, { color: colors.text }]}>
                   {tile.title}
                 </Text>
-                <Text numberOfLines={1} style={styles.pinnedSubtitle}>
+                <Text numberOfLines={1} style={[styles.pinnedSubtitle, { color: colors.subText }]}>
                   {tile.subtitle}
                 </Text>
               </View>
@@ -177,27 +183,27 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pre-save upcoming releases</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Pre-save upcoming releases</Text>
           <View style={styles.releaseGrid}>
             {upcomingReleases.map((release) => (
               <Pressable
                 key={release.id}
-                style={styles.releaseCard}
+                style={[styles.releaseCard, { backgroundColor: colors.card }]}
                 onPress={() => handleNavigate("/premium")}
               >
                 <Image
                   source={{ uri: release.artwork }}
                   style={styles.releaseArt}
                 />
-                <Text style={styles.releaseTitle}>{release.title}</Text>
-                <Text style={styles.releaseSubtitle}>{release.subtitle}</Text>
+                <Text style={[styles.releaseTitle, { color: colors.text }]}>{release.title}</Text>
+                <Text style={[styles.releaseSubtitle, { color: colors.subText }]}>{release.subtitle}</Text>
               </Pressable>
             ))}
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Jump back in</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Jump back in</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -206,13 +212,13 @@ export default function HomeScreen() {
             {jumpBackIn.map((mix) => (
               <Pressable
                 key={mix.id}
-                style={styles.jumpCard}
+                style={[styles.jumpCard, { backgroundColor: colors.card }]}
                 onPress={() => handleNavigate("/library")}
               >
                 <Image source={{ uri: mix.artwork }} style={styles.jumpArt} />
                 <View style={styles.jumpCopy}>
-                  <Text style={styles.jumpTitle}>{mix.title}</Text>
-                  <Text style={styles.jumpSubtitle}>{mix.subtitle}</Text>
+                  <Text style={[styles.jumpTitle, { color: colors.text }]}>{mix.title}</Text>
+                  <Text style={[styles.jumpSubtitle, { color: colors.subText }]}>{mix.subtitle}</Text>
                 </View>
               </Pressable>
             ))}
@@ -228,11 +234,9 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#050505",
   },
   container: {
     flex: 1,
-    backgroundColor: "#050505",
   },
   content: {
     paddingHorizontal: 20,
@@ -249,12 +253,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#1DB954",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarInitial: {
-    color: "#000",
     fontWeight: "700",
     fontSize: 18,
   },
@@ -266,7 +268,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#1c1c1c",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -279,17 +280,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 999,
-    backgroundColor: "#1c1c1c",
-  },
-  filterChipActive: {
-    backgroundColor: "#1DB954",
   },
   filterLabel: {
-    color: "#d4d4d4",
     fontWeight: "600",
-  },
-  filterLabelActive: {
-    color: "#000",
   },
   pinnedGrid: {
     flexDirection: "row",
@@ -300,7 +293,6 @@ const styles = StyleSheet.create({
   pinnedCard: {
     width: "48%",
     borderRadius: 12,
-    backgroundColor: "#181818",
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
@@ -315,12 +307,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pinnedTitle: {
-    color: "#fff",
     fontWeight: "700",
     fontSize: 14,
   },
   pinnedSubtitle: {
-    color: "#9ca3af",
     marginTop: 4,
     fontSize: 12,
   },
@@ -328,7 +318,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   sectionTitle: {
-    color: "#fff",
     fontSize: 20,
     fontWeight: "700",
   },
@@ -339,7 +328,6 @@ const styles = StyleSheet.create({
   },
   releaseCard: {
     flex: 1,
-    backgroundColor: "#181818",
     borderRadius: 16,
     padding: 12,
     gap: 12,
@@ -350,12 +338,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   releaseTitle: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "700",
   },
   releaseSubtitle: {
-    color: "#b3b3b3",
     fontSize: 14,
   },
   horizontalList: {
@@ -365,7 +351,6 @@ const styles = StyleSheet.create({
   jumpCard: {
     width: 200,
     borderRadius: 18,
-    backgroundColor: "#181818",
     overflow: "hidden",
   },
   jumpArt: {
@@ -377,12 +362,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   jumpTitle: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "700",
   },
   jumpSubtitle: {
-    color: "#b3b3b3",
     fontSize: 13,
   },
 });

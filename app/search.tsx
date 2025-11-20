@@ -12,9 +12,11 @@ import {
   View,
 } from "react-native";
 import TabBar from "../components/TabBar";
+import { useTheme } from "../hooks/useTheme";
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
+  const { colors } = useTheme();
   const genres = useMemo(
     () => [
       { id: "1", label: "Pop", color: "#f87171" },
@@ -42,35 +44,35 @@ export default function SearchScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
         >
           <View>
-            <Text style={styles.heading}>Search</Text>
-            <Text style={styles.subheading}>What do you want to listen to?</Text>
+            <Text style={[styles.heading, { color: colors.text }]}>Search</Text>
+            <Text style={[styles.subheading, { color: colors.subText }]}>What do you want to listen to?</Text>
           </View>
-          <View style={styles.searchBar}>
-            <Ionicons name="search" size={20} color="#9ca3af" />
+          <View style={[styles.searchBar, { backgroundColor: colors.card }]}>
+            <Ionicons name="search" size={20} color={colors.subText} />
             <TextInput
               value={query}
               onChangeText={setQuery}
               placeholder="Search artists, songs, or podcasts"
-              placeholderTextColor="#9ca3af"
-              style={styles.input}
+              placeholderTextColor={colors.subText}
+              style={[styles.input, { color: colors.text }]}
             />
             {query.length > 0 && (
               <Pressable onPress={() => setQuery("")}>
-                <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                <Ionicons name="close-circle" size={20} color={colors.subText} />
               </Pressable>
             )}
           </View>
 
           <View>
-            <Text style={styles.sectionTitle}>Browse all</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Browse all</Text>
             <FlatList
               data={genres}
               keyExtractor={(item) => item.id}
@@ -80,18 +82,18 @@ export default function SearchScreen() {
               renderItem={({ item }) => (
                 <Pressable style={[styles.genreTile, { backgroundColor: item.color }]}
                 >
-                  <Text style={styles.genreLabel}>{item.label}</Text>
+                  <Text style={[styles.genreLabel, { color: colors.text }]}>{item.label}</Text>
                 </Pressable>
               )}
             />
           </View>
 
           <View>
-            <Text style={styles.sectionTitle}>Trending searches</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Trending searches</Text>
             {trending.map((term) => (
-              <Pressable key={term} style={styles.trendingRow}>
-                <Ionicons name="time-outline" size={18} color="#9ca3af" />
-                <Text style={styles.trendingText}>{term}</Text>
+              <Pressable key={term} style={[styles.trendingRow, { borderBottomColor: colors.secondary }]}>
+                <Ionicons name="time-outline" size={18} color={colors.subText} />
+                <Text style={[styles.trendingText, { color: colors.text }]}>{term}</Text>
               </Pressable>
             ))}
           </View>
@@ -105,11 +107,9 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#050505",
   },
   container: {
     flex: 1,
-    backgroundColor: "#050505",
   },
   content: {
     paddingHorizontal: 20,
@@ -117,30 +117,25 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   heading: {
-    color: "#fff",
     fontSize: 32,
     fontWeight: "800",
   },
   subheading: {
-    color: "#b3b3b3",
     marginTop: 4,
   },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#181818",
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   input: {
     flex: 1,
-    color: "#fff",
     fontSize: 16,
   },
   sectionTitle: {
-    color: "#fff",
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 12,
@@ -157,7 +152,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   genreLabel: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "700",
   },
@@ -167,10 +161,8 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#1f1f1f",
   },
   trendingText: {
-    color: "#fff",
     fontSize: 16,
   },
 });

@@ -6,41 +6,43 @@ import {
   Text,
   View,
 } from "react-native";
+import { useTheme } from "../hooks/useTheme";
 
 export default function Index() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
       <View style={styles.logoRow}>
-        <View style={styles.logoCircle}>
-          <Text style={styles.logoSymbol}>♪</Text>
+        <View style={[styles.logoCircle, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.logoSymbol, { color: colors.background }]}>♪</Text>
         </View>
-        <Text style={styles.logoText}>Spotify</Text>
+        <Text style={[styles.logoText, { color: colors.text }]}>Spotify</Text>
       </View>
 
       <View style={styles.heroCopy}>
-        <Text style={styles.headline}>Millions of songs.</Text>
-        <Text style={styles.headline}>Free on Spotify.</Text>
-        <Text style={styles.subhead}>
+        <Text style={[styles.headline, { color: colors.text }]}>Millions of songs.</Text>
+        <Text style={[styles.headline, { color: colors.text }]}>Free on Spotify.</Text>
+        <Text style={[styles.subhead, { color: colors.subText }]}>
           Listen to the music you love and discover your next favorite track.
         </Text>
       </View>
 
       <View style={styles.actions}>
         <Pressable
-          style={[styles.button, styles.primaryButton]}
+          style={[styles.button, styles.primaryButton, { backgroundColor: colors.primary }]}
           onPress={() => router.push({ pathname: "/signup" })}
         >
-          <Text style={styles.primaryLabel}>Sign up free</Text>
+          <Text style={[styles.primaryLabel, { color: colors.background }]}>Sign up free</Text>
         </Pressable>
 
         <Pressable
-          style={[styles.button, styles.secondaryButton]}
+          style={[styles.button, styles.secondaryButton, { borderColor: colors.text }]}
           onPress={() => router.push({ pathname: "/login" })}
         >
-          <Text style={styles.secondaryLabel}>Log in</Text>
+          <Text style={[styles.secondaryLabel, { color: colors.text }]}>Log in</Text>
         </Pressable>
       </View>
     </View>
@@ -50,7 +52,6 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
     paddingHorizontal: 24,
     paddingVertical: 48,
     justifyContent: "space-between",
@@ -64,19 +65,16 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#1DB954",
     alignItems: "center",
     justifyContent: "center",
   },
   logoSymbol: {
     fontSize: 20,
-    color: "#000",
     fontWeight: "700",
   },
   logoText: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#fff",
     letterSpacing: 0.5,
   },
   heroCopy: {
@@ -86,11 +84,9 @@ const styles = StyleSheet.create({
   headline: {
     fontSize: 36,
     fontWeight: "800",
-    color: "#fff",
   },
   subhead: {
     fontSize: 16,
-    color: "#b3b3b3",
     marginTop: 12,
   },
   actions: {
@@ -102,19 +98,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   primaryButton: {
-    backgroundColor: "#1DB954",
   },
   primaryLabel: {
-    color: "#000",
     fontWeight: "700",
     fontSize: 16,
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: "#fff",
   },
   secondaryLabel: {
-    color: "#fff",
     fontWeight: "600",
     fontSize: 16,
   },

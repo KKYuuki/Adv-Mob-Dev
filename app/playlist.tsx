@@ -3,6 +3,7 @@ import { View, Text, TextInput, FlatList, StyleSheet, Alert, TouchableOpacity } 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../hooks/useTheme';
 
 type Song = {
   id: string;
@@ -79,12 +80,12 @@ const playlistReducer = (state: State, action: Action): State => {
   }
 };
 
-const SongItem = React.memo(({ song, onRemove }: { song: Song; onRemove: (id: string) => void }) => (
-  <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.songItem}>
-    <Ionicons name="musical-notes" size={24} color="#1DB954" style={{ marginRight: 15 }} />
-    <Text style={styles.songName}>{song.name}</Text>
+const SongItem = React.memo(({ song, onRemove, colors }: { song: Song; onRemove: (id: string) => void; colors: any }) => (
+  <Animated.View entering={FadeIn} exiting={FadeOut} style={[styles.songItem, { backgroundColor: colors.card }]}>
+    <Ionicons name="musical-notes" size={24} color={colors.primary} style={{ marginRight: 15 }} />
+    <Text style={[styles.songName, { color: colors.text }]}>{song.name}</Text>
     <TouchableOpacity onPress={() => onRemove(song.id)}>
-      <Ionicons name="close-circle" size={24} color="#b3b3b3" />
+      <Ionicons name="close-circle" size={24} color={colors.subText} />
     </TouchableOpacity>
   </Animated.View>
 ));
@@ -92,6 +93,7 @@ const SongItem = React.memo(({ song, onRemove }: { song: Song; onRemove: (id: st
 const PlaylistScreen = () => {
   const [state, dispatch] = useReducer(playlistReducer, initialState);
   const [songName, setSongName] = useState('');
+  const { colors } = useTheme();
 
   useEffect(() => {
     const loadState = async () => {
@@ -149,47 +151,47 @@ const PlaylistScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Playlist Builder</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Playlist Builder</Text>
       <View style={styles.inputContainer}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.secondary, color: colors.text }]}
           placeholder="Enter song name"
-          placeholderTextColor="#b3b3b3"
+          placeholderTextColor={colors.subText}
           value={songName}
           onChangeText={setSongName}
         />
-        <TouchableOpacity style={styles.addButton} onPress={handleAddSong}>
-          <Text style={styles.addButtonText}>Add</Text>
+        <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.primary }]} onPress={handleAddSong}>
+          <Text style={[styles.addButtonText, { color: colors.text }]}>Add</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.actionsContainer}>
         <TouchableOpacity
-          style={[styles.actionButton, state.history.length === 0 && styles.disabledButton]}
+          style={[styles.actionButton, { backgroundColor: colors.card }, state.history.length === 0 && styles.disabledButton]}
           onPress={handleUndo}
           disabled={state.history.length === 0}
         >
-          <Ionicons name="arrow-undo" size={20} color="#fff" />
-          <Text style={styles.actionButtonText}>Undo</Text>
+          <Ionicons name="arrow-undo" size={20} color={colors.text} />
+          <Text style={[styles.actionButtonText, { color: colors.text }]}>Undo</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.actionButton, state.future.length === 0 && styles.disabledButton]}
+          style={[styles.actionButton, { backgroundColor: colors.card }, state.future.length === 0 && styles.disabledButton]}
           onPress={handleRedo}
           disabled={state.future.length === 0}
         >
-          <Ionicons name="arrow-redo" size={20} color="#fff" />
-          <Text style={styles.actionButtonText}>Redo</Text>
+          <Ionicons name="arrow-redo" size={20} color={colors.text} />
+          <Text style={[styles.actionButtonText, { color: colors.text }]}>Redo</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={handleClearPlaylist}>
-          <Ionicons name="trash" size={20} color="#fff" />
-          <Text style={styles.actionButtonText}>Clear</Text>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.card }]} onPress={handleClearPlaylist}>
+          <Ionicons name="trash" size={20} color={colors.text} />
+          <Text style={[styles.actionButtonText, { color: colors.text }]}>Clear</Text>
         </TouchableOpacity>
       </View>
       <FlatList
         data={state.playlist}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <SongItem song={item} onRemove={handleRemoveSong} />}
-        ListEmptyComponent={<Text style={styles.emptyText}>Your playlist is empty. Add some songs!</Text>}
+        renderItem={({ item }) => <SongItem song={item} onRemove={handleRemoveSong} colors={colors} />}
+        ListEmptyComponent={<Text style={[styles.emptyText, { color: colors.subText }]}>Your playlist is empty. Add some songs!</Text>}
       />
     </View>
   );
@@ -199,12 +201,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#121212',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -214,22 +214,19 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#282828',
     borderRadius: 5,
     padding: 15,
-    color: '#fff',
     fontSize: 16,
     marginRight: 10,
+    borderWidth: 1,
   },
   addButton: {
-    backgroundColor: '#1DB954',
     paddingVertical: 15,
     paddingHorizontal: 25,
     borderRadius: 5,
     justifyContent: 'center',
   },
   addButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -241,13 +238,11 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#282828',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 5,
   },
   actionButtonText: {
-    color: '#fff',
     fontSize: 14,
     marginLeft: 8,
   },
@@ -258,18 +253,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
-    backgroundColor: '#1e1e1e',
     borderRadius: 5,
     marginBottom: 10,
   },
   songName: {
     flex: 1,
-    color: '#fff',
     fontSize: 16,
   },
   emptyText: {
     textAlign: 'center',
-    color: '#b3b3b3',
     marginTop: 50,
     fontSize: 16,
   },
