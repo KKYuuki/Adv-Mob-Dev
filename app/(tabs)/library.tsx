@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
+  Image,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -10,6 +11,9 @@ import {
   StyleSheet,
   Text,
   View,
+  Modal,
+  TouchableOpacity,
+  Animated,
 } from "react-native";
 import TabBar from "../../components/TabBar";
 import PlaylistCreationModal from "../../components/PlaylistCreationModal";
@@ -28,6 +32,10 @@ export default function LibraryScreen() {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [userPlaylists, setUserPlaylists] = useState<UserPlaylist[]>([]);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<UserPlaylist | null>(null);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [pressedPlaylistId, setPressedPlaylistId] = useState<string | null>(null);
+  const modalAnimation = React.useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
     loadUserPlaylists();
@@ -39,9 +47,51 @@ export default function LibraryScreen() {
     }, [])
   );
 
-  const handleModalClose = () => {
-    setShowCreateModal(false);
-    loadUserPlaylists(); // Refresh playlists when modal closes
+  const handlePlaylistLongPress = (playlist: UserPlaylist) => {
+    setSelectedPlaylist(playlist);
+    setShowPlaylistModal(true);
+    setPressedPlaylistId(null); // Clear pressed state when modal opens
+    Animated.timing(modalAnimation, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closePlaylistModal = () => {
+    Animated.timing(modalAnimation, {
+      toValue: 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowPlaylistModal(false);
+      setSelectedPlaylist(null);
+      setPressedPlaylistId(null); // Clear pressed state when modal closes
+    });
+  };
+
+  const handleDeletePlaylist = async () => {
+    if (!selectedPlaylist) return;
+    
+    try {
+      const existingPlaylists = await AsyncStorage.getItem("user_playlists");
+      if (existingPlaylists) {
+        const playlists = JSON.parse(existingPlaylists);
+        const updatedPlaylists = playlists.filter((p: UserPlaylist) => p.id !== selectedPlaylist.id);
+        await AsyncStorage.setItem("user_playlists", JSON.stringify(updatedPlaylists));
+        setUserPlaylists(updatedPlaylists.reverse());
+      }
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+    }
+    closePlaylistModal();
+  };
+
+  const handlePinPlaylist = async () => {
+    if (!selectedPlaylist) return;
+    // Implement pin functionality here
+    console.log("Pin playlist:", selectedPlaylist.name);
+    closePlaylistModal();
   };
 
   const loadUserPlaylists = async () => {
@@ -60,16 +110,14 @@ export default function LibraryScreen() {
   
   const artists = useMemo(
     () => [
-      { id: "1", name: "Artist A", image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200" },
-      { id: "2", name: "Artist B", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200" },
-      { id: "3", name: "Artist C", image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200" },
-      { id: "4", name: "Artist D", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200" },
-      { id: "5", name: "Artist E", image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200" },
-      { id: "6", name: "Artist F", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200" },
-      { id: "7", name: "Artist G", image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200" },
-      { id: "8", name: "Artist H", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200" },
-      { id: "9", name: "Artist I", image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200" },
-      { id: "10", name: "Artist J", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200" },
+      { id: "1", name: "The Weeknd", profileImage: require("../../assets/artist/Weeknd.png") },
+      { id: "2", name: "Dua Lipa", profileImage: require("../../assets/artist/Dua.png") },
+      { id: "3", name: "Olivia Rodrigo", profileImage: require("../../assets/artist/Olivia.jpg") },
+      { id: "4", name: "The Kid LAROI", profileImage: require("../../assets/artist/LAROI.jpg") },
+      { id: "5", name: "Justin Bieber", profileImage: require("../../assets/artist/Justin.jpeg") },
+      { id: "6", name: "Taylor Swift", profileImage: require("../../assets/artist/Taylor.jpg") },
+      { id: "7", name: "Drake", profileImage: require("../../assets/artist/Drake.jpg") },
+      { id: "8", name: "Billie Eilish", profileImage: require("../../assets/artist/Billie.jpg") },
     ],
     []
   );
@@ -83,8 +131,15 @@ export default function LibraryScreen() {
             {userPlaylists.map((playlist) => (
               <Pressable
                 key={playlist.id}
-                style={styles.playlistRow}
+                style={[
+                  styles.playlistRow,
+                  pressedPlaylistId === playlist.id && styles.playlistRowPressed
+                ]}
                 onPress={() => router.push(`/playlist/${playlist.id}` as never)}
+                onLongPress={() => handlePlaylistLongPress(playlist)}
+                delayLongPress={500}
+                onPressIn={() => setPressedPlaylistId(playlist.id)}
+                onPressOut={() => setPressedPlaylistId(null)}
               >
                 <View style={[styles.playlistIcon, { backgroundColor: colors.primary }]}>
                   <Ionicons name="musical-notes" size={20} color="#000000" />
@@ -107,9 +162,7 @@ export default function LibraryScreen() {
           <View style={styles.playlistsList}>
             {artists.map((artist) => (
               <Pressable key={artist.id} style={styles.playlistRow}>
-                <View style={[styles.playlistIcon, { backgroundColor: colors.primary }]}>
-                  <Ionicons name="person" size={20} color="#000000" />
-                </View>
+                <Image source={artist.profileImage} style={styles.artistProfileImage} />
                 <View style={styles.playlistInfo}>
                   <Text style={[styles.playlistName, { color: colors.text }]}>{artist.name}</Text>
                   <Text style={[styles.playlistSubtitle, { color: colors.subText }]}>Artist</Text>
@@ -130,8 +183,15 @@ export default function LibraryScreen() {
                 {userPlaylists.map((playlist) => (
                   <Pressable
                     key={playlist.id}
-                    style={styles.playlistRow}
+                    style={[
+                      styles.playlistRow,
+                      pressedPlaylistId === playlist.id && styles.playlistRowPressed
+                    ]}
                     onPress={() => router.push(`/playlist/${playlist.id}` as never)}
+                    onLongPress={() => handlePlaylistLongPress(playlist)}
+                    delayLongPress={500}
+                    onPressIn={() => setPressedPlaylistId(playlist.id)}
+                    onPressOut={() => setPressedPlaylistId(null)}
                   >
                     <View style={[styles.playlistIcon, { backgroundColor: colors.primary }]}>
                       <Ionicons name="musical-notes" size={20} color="#000000" />
@@ -152,9 +212,7 @@ export default function LibraryScreen() {
             <View style={styles.playlistsList}>
               {artists.map((artist) => (
                 <Pressable key={artist.id} style={styles.playlistRow}>
-                  <View style={[styles.playlistIcon, { backgroundColor: colors.primary }]}>
-                    <Ionicons name="person" size={20} color="#000000" />
-                  </View>
+                  <Image source={artist.profileImage} style={styles.artistProfileImage} />
                   <View style={styles.playlistInfo}>
                     <Text style={[styles.playlistName, { color: colors.text }]}>{artist.name}</Text>
                     <Text style={[styles.playlistSubtitle, { color: colors.subText }]}>Artist</Text>
@@ -226,8 +284,72 @@ export default function LibraryScreen() {
       
       <PlaylistCreationModal
         visible={showCreateModal}
-        onClose={handleModalClose}
+        onClose={() => {
+          setShowCreateModal(false);
+          loadUserPlaylists();
+        }}
       />
+      
+      <Modal
+        visible={showPlaylistModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={closePlaylistModal}
+      >
+        <Pressable style={styles.modalOverlay} onPress={closePlaylistModal}>
+          <Animated.View 
+            style={[
+              styles.playlistModal,
+              {
+                transform: [
+                  {
+                    translateY: modalAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [300, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <View style={[styles.modalPlaylistIcon, { backgroundColor: colors.primary }]}>
+                <Ionicons name="musical-notes" size={32} color="#000000" />
+              </View>
+              <Text style={[styles.modalPlaylistTitle, { color: colors.text }]}>
+                {selectedPlaylist?.name}
+              </Text>
+            </View>
+            
+            <View style={styles.modalOptions}>
+              <TouchableOpacity style={styles.modalOption}>
+                <Ionicons name="share-outline" size={24} color={colors.text} />
+                <Text style={[styles.modalOptionText, { color: colors.text }]}>Share</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.modalOption}>
+                <Ionicons name="download-outline" size={24} color={colors.text} />
+                <Text style={[styles.modalOptionText, { color: colors.text }]}>Download</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.modalOption} onPress={handlePinPlaylist}>
+                <Ionicons name="push-outline" size={24} color={colors.text} />
+                <Text style={[styles.modalOptionText, { color: colors.text }]}>Pin Playlist</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.modalOption} onPress={handleDeletePlaylist}>
+                <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+                <Text style={[styles.modalOptionText, { color: "#FF3B30" }]}>Delete Playlist</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.modalOption}>
+                <Ionicons name="qr-code-outline" size={24} color={colors.text} />
+                <Text style={[styles.modalOptionText, { color: colors.text }]}>Show Spotify Code</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -303,15 +425,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     gap: 16,
   },
+  playlistRowPressed: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginHorizontal: -20,
+    paddingHorizontal: 24,
+  },
   playlistIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
   },
+  artistProfileImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
   playlistInfo: {
     flex: 1,
+    marginLeft: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  playlistModal: {
+    backgroundColor: '#282828',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalPlaylistIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  modalPlaylistTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  modalOptions: {
+    paddingHorizontal: 20,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    gap: 16,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
   playlistName: {
     fontSize: 16,

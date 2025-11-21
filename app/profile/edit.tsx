@@ -68,7 +68,7 @@ export default function ProfileScreen() {
 
     setIsLoading(true);
     try {
-      await updateProfile(name);
+      await updateProfile(name, user?.profilePicture);
       Alert.alert("Success", "Profile updated successfully!");
     } catch {
       Alert.alert("Error", "Failed to update profile");

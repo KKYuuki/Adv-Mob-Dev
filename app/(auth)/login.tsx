@@ -15,7 +15,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function LoginScreen() {
@@ -49,24 +48,18 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={["#1DB954", "#000000"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.gradient}
-      >
+      <View style={styles.container}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.container}
+          style={styles.keyboardContainer}
         >
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.header}>
               <Image
-                source={{ uri: "https://images.unsplash.com/photo-1598931157873-a2eea0f4b5fc?w=200" }}
+                source={require("../../assets/logo/Spotify Logo.png")}
                 style={styles.logo}
               />
-              <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Sign in to continue to Spotify</Text>
+              <Text style={styles.title}>Spotify</Text>
             </View>
 
             <View style={styles.form}>
@@ -104,16 +97,39 @@ export default function LoginScreen() {
                   {isLoading ? "Signing In..." : "Sign In"}
                 </Text>
               </Pressable>
-
-              <Pressable onPress={() => router.push("/(auth)/signup")}>
-                <Text style={styles.signupLink}>
-                  Don&apos;t have an account? <Text style={styles.signupLinkText}>Sign Up</Text>
-                </Text>
-              </Pressable>
+              
+              <View style={styles.socialLoginContainer}>
+                <Text style={styles.socialLoginText}>Or continue with</Text>
+                <View style={styles.socialButtonsContainer}>
+                  <Pressable style={styles.socialButton}>
+                    <View style={styles.socialIconContainer}>
+                      <Image
+                        source={require("../../assets/logo/Facebook Logo.png")}
+                        style={styles.socialIcon}
+                      />
+                    </View>
+                  </Pressable>
+                  <Pressable style={styles.socialButton}>
+                    <View style={styles.socialIconContainer}>
+                      <Image
+                        source={require("../../assets/logo/Google Logo.png")}
+                        style={styles.socialIcon}
+                      />
+                    </View>
+                  </Pressable>
+                </View>
+              </View>
             </View>
           </ScrollView>
+          <View style={styles.bottomSignupContainer}>
+            <Pressable onPress={() => router.push("/(auth)/signup")}>
+              <Text style={styles.signupLink}>
+                Don&apos;t have an account? <Text style={styles.signupLinkText}>Sign Up</Text>
+              </Text>
+            </Pressable>
+          </View>
         </KeyboardAvoidingView>
-      </LinearGradient>
+      </View>
     </SafeAreaView>
   );
 }
@@ -121,11 +137,12 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
+    backgroundColor: '#1a1a1a',
   },
   container: {
+    flex: 1,
+  },
+  keyboardContainer: {
     flex: 1,
   },
   scrollContent: {
@@ -135,19 +152,19 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 48,
+    marginBottom: 16,
   },
   logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 24,
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+    marginBottom: 16,
   },
   title: {
-    fontSize: 32,
+    fontSize: 48,
     fontWeight: "700",
     color: "#fff",
-    marginBottom: 8,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
@@ -155,7 +172,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   form: {
-    gap: 20,
+    gap: 16,
   },
   inputContainer: {
     flexDirection: "row",
@@ -189,14 +206,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  bottomSignupContainer: {
+    alignItems: 'center',
+    paddingBottom: 40,
+  },
   signupLink: {
     textAlign: "center",
     color: "#b3b3b3",
     fontSize: 14,
-    marginTop: 24,
   },
   signupLinkText: {
     color: "#1DB954",
     fontWeight: "600",
+  },
+  socialLoginContainer: {
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  socialLoginText: {
+    color: '#b3b3b3',
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  socialButtonsContainer: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  socialButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  socialIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  socialIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
   },
 });

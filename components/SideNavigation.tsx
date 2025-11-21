@@ -30,9 +30,9 @@ export default function SideNavigation({ visible, onClose, slideAnimation }: Sid
     onClose();
   };
 
-  const handleProfilePress = () => {
+  const handleNavigation = (route: any) => {
     onClose();
-    router.push("/profile");
+    router.push(route);
   };
 
   const handleLogout = () => {
@@ -88,66 +88,43 @@ export default function SideNavigation({ visible, onClose, slideAnimation }: Sid
               <Text style={[styles.profileName, { color: colors.text }]}>
                 {user?.name || "User"}
               </Text>
-              <Pressable style={styles.viewProfileButton} onPress={handleProfilePress}>
+              <Pressable style={styles.viewProfileButton} onPress={() => handleNavigation("/profile")}>
                 <Text style={[styles.viewProfileText, { color: colors.primary }]}>View profile</Text>
               </Pressable>
             </View>
           </View>
         </View>
         
-        <ScrollView style={styles.sideNavContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.navSection}>
-            <Text style={[styles.navSectionTitle, { color: colors.subText }]}>Browse</Text>
-            <Pressable style={styles.navItem}>
-              <Ionicons name="home" size={24} color={colors.text} />
-              <Text style={[styles.navItemText, { color: colors.text }]}>Home</Text>
-            </Pressable>
-            <Pressable style={styles.navItem}>
-              <Ionicons name="search" size={24} color={colors.text} />
-              <Text style={[styles.navItemText, { color: colors.text }]}>Search</Text>
-            </Pressable>
-            <Pressable style={styles.navItem}>
-              <Ionicons name="library" size={24} color={colors.text} />
-              <Text style={[styles.navItemText, { color: colors.text }]}>Your Library</Text>
-            </Pressable>
-          </View>
+        <View style={styles.sideNavContent}>
+          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.navSection}>
+              <Text style={[styles.navSectionTitle, { color: colors.subText }]}>Browse</Text>
+              <Pressable style={styles.navItem} onPress={() => handleNavigation("/home")}>
+                <Ionicons name="home" size={24} color={colors.text} />
+                <Text style={[styles.navItemText, { color: colors.text }]}>Home</Text>
+              </Pressable>
+              <Pressable style={styles.navItem} onPress={() => handleNavigation("/search")}>
+                <Ionicons name="search" size={24} color={colors.text} />
+                <Text style={[styles.navItemText, { color: colors.text }]}>Search</Text>
+              </Pressable>
+              <Pressable style={styles.navItem} onPress={() => handleNavigation("/library")}>
+                <Ionicons name="library" size={24} color={colors.text} />
+                <Text style={[styles.navItemText, { color: colors.text }]}>Your Library</Text>
+              </Pressable>
+            </View>
+          </ScrollView>
           
-          <View style={styles.navSection}>
-            <Text style={[styles.navSectionTitle, { color: colors.subText }]}>Your Content</Text>
-            <Pressable style={styles.navItem}>
-              <Ionicons name="heart" size={24} color={colors.text} />
-              <Text style={[styles.navItemText, { color: colors.text }]}>Liked Songs</Text>
-            </Pressable>
-            <Pressable style={styles.navItem}>
-              <Ionicons name="musical-notes" size={24} color={colors.text} />
-              <Text style={[styles.navItemText, { color: colors.text }]}>Made for You</Text>
-            </Pressable>
-            <Pressable style={styles.navItem}>
-              <Ionicons name="download" size={24} color={colors.text} />
-              <Text style={[styles.navItemText, { color: colors.text }]}>Downloaded</Text>
-            </Pressable>
-          </View>
-          
-          <View style={styles.navSection}>
-            <Text style={[styles.navSectionTitle, { color: colors.subText }]}>Settings</Text>
+          <View style={styles.bottomSection}>
             <Pressable style={styles.navItem}>
               <Ionicons name="settings" size={24} color={colors.text} />
               <Text style={[styles.navItemText, { color: colors.text }]}>Settings</Text>
-            </Pressable>
-            <Pressable style={styles.navItem}>
-              <Ionicons name="person" size={24} color={colors.text} />
-              <Text style={[styles.navItemText, { color: colors.text }]}>Account</Text>
-            </Pressable>
-            <Pressable style={styles.navItem}>
-              <Ionicons name="help-circle" size={24} color={colors.text} />
-              <Text style={[styles.navItemText, { color: colors.text }]}>Help</Text>
             </Pressable>
             <Pressable style={styles.navItem} onPress={handleLogout}>
               <Ionicons name="log-out" size={24} color="#FF3B30" />
               <Text style={[styles.navItemText, { color: "#FF3B30" }]}>Logout</Text>
             </Pressable>
           </View>
-        </ScrollView>
+        </View>
       </Animated.View>
     </>
   );
@@ -171,7 +148,7 @@ const styles = StyleSheet.create({
     left: 0,
     bottom: 0,
     width: 300,
-    paddingTop: 18,
+    paddingTop: 20,
     zIndex: 1001,
     shadowColor: "#000",
     shadowOffset: {
@@ -228,9 +205,16 @@ const styles = StyleSheet.create({
   sideNavContent: {
     flex: 1,
     padding: 20,
+    flexDirection: 'column',
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  bottomSection: {
+    marginTop: 'auto',
   },
   navSection: {
-    marginBottom: 32,
+    marginBottom: 16,
   },
   navSectionTitle: {
     fontSize: 12,

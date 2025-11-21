@@ -1,31 +1,28 @@
-import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   Animated,
+  FlatList,
   Image,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import TabBar from "../../components/TabBar";
 import SideNavigation from "../../components/SideNavigation";
+import ThreeDotButton from "../../components/ThreeDotButton";
 import { useTheme } from "../../hooks/useTheme";
 import { useAuth } from "../../contexts/AuthContext";
-
-interface PlaylistCard {
-  id: string;
-  title: string;
-  subtitle: string;
-  artwork: string;
-}
+import { artists, Song } from "../../data/artists";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const handleNavigate = (path: string) => router.push(path as never);
   const filters = useMemo(() => ["All", "Music", "Podcasts"], []);
   const { colors } = useTheme();
   const { user } = useAuth();
@@ -52,89 +49,116 @@ export default function HomeScreen() {
     });
   };
 
-  const pinnedTiles: PlaylistCard[] = useMemo(
-    () => [
-      {
-        id: "pin-1",
-        title: "2020s Mix",
-        subtitle: "Playlist",
-        artwork: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200",
-      },
-      {
-        id: "pin-2",
-        title: "Liked Songs",
-        subtitle: "248 songs",
-        artwork: "https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=200",
-      },
-      {
-        id: "pin-3",
-        title: "umamusume brainrot",
-        subtitle: "Playlist",
-        artwork: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=200",
-      },
-      {
-        id: "pin-4",
-        title: "Daily",
-        subtitle: "Playlist",
-        artwork: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=200",
-      },
-      {
-        id: "pin-5",
-        title: "Daily Mix 4",
-        subtitle: "Mixed for you",
-        artwork: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200",
-      },
-      {
-        id: "pin-6",
-        title: "Daily Mix 2",
-        subtitle: "Mixed for you",
-        artwork: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=200",
-      },
-    ],
-    []
-  );
+  const getRandomSongs = (count: number): Song[] => {
+    const allSongs: Song[] = [];
+    artists.forEach(artist => {
+      allSongs.push(...artist.songs);
+    });
+    
+    const shuffled = [...allSongs].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  };
 
-  const upcomingReleases: PlaylistCard[] = useMemo(
-    () => [
-      {
-        id: "release-1",
-        title: "FLAMES",
-        subtitle: "BINI",
-        artwork: "https://images.unsplash.com/photo-1464375117522-1311d6a5b81f?w=600",
-      },
-      {
-        id: "release-2",
-        title: "美辞学",
-        subtitle: "Reol",
-        artwork: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600",
-      },
-    ],
-    []
-  );
+  const getSongsByArtist = (artistName: string): Song[] => {
+    const artist = artists.find(a => a.name === artistName);
+    return artist ? artist.songs.slice(0, 3) : [];
+  };
 
-  const jumpBackIn: PlaylistCard[] = useMemo(
-    () => [
-      {
-        id: "jump-1",
-        title: "HUNTRX Mix",
-        subtitle: "Pop Demo",
-        artwork: "https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=400",
-      },
-      {
-        id: "jump-2",
-        title: "Sakura Vibes",
-        subtitle: "City Pop",
-        artwork: "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=400",
-      },
-      {
-        id: "jump-3",
-        title: "Lo-Fi Focus",
-        subtitle: "Instrumental",
-        artwork: "https://images.unsplash.com/photo-1500336624523-d727130c3328?w=400",
-      },
-    ],
-    []
-  );
+  const startListeningSongs = useMemo(() => getRandomSongs(3), []);
+  const weekndSongs = useMemo(() => getSongsByArtist("The Weeknd"), []);
+
+  // Modal state
+  const [showSongOptions, setShowSongOptions] = useState(false);
+  const [selectedSongForOptions, setSelectedSongForOptions] = useState<Song | null>(null);
+
+  // Helper function to get artist profile image
+  const getArtistProfileImage = (artistName: string) => {
+    const artist = artists.find(a => a.name === artistName);
+    if (!artist) return null;
+    
+    // Map artist names to their local image paths
+    const imageMap: { [key: string]: any } = {
+      "The Weeknd": require("../../assets/artist/Weeknd.png"),
+      "Dua Lipa": require("../../assets/artist/Dua.png"),
+      "Olivia Rodrigo": require("../../assets/artist/Olivia.jpg"),
+      "The Kid LAROI": require("../../assets/artist/LAROI.jpg"),
+      "Justin Bieber": require("../../assets/artist/Justin.jpeg"),
+      "Taylor Swift": require("../../assets/artist/Taylor.jpg"),
+      "Drake": require("../../assets/artist/Drake.jpg"),
+      "Billie Eilish": require("../../assets/artist/Billie.jpg"),
+    };
+    
+    return imageMap[artist.name] || null;
+  };
+
+  // Modal handlers
+  const handleSongOptions = (song: Song) => {
+    setSelectedSongForOptions(song);
+    setShowSongOptions(true);
+  };
+
+  const closeSongOptions = () => {
+    setShowSongOptions(false);
+    setSelectedSongForOptions(null);
+  };
+
+  const handleAddToPlaylist = async () => {
+    if (!selectedSongForOptions) return;
+    
+    try {
+      // Get existing playlists
+      const existingPlaylists = await AsyncStorage.getItem("user_playlists");
+      let playlists = existingPlaylists ? JSON.parse(existingPlaylists) : [];
+      
+      if (playlists.length === 0) {
+        // Create a default playlist if none exist
+        const defaultPlaylist = {
+          id: Date.now().toString(),
+          name: "My Playlist",
+          createdAt: new Date().toISOString(),
+          songs: [selectedSongForOptions],
+          description: "Default playlist",
+          isPrivate: false
+        };
+        playlists.push(defaultPlaylist);
+        console.log(`Created default playlist and added "${selectedSongForOptions.title}"`);
+      } else {
+        // Add to the first playlist, avoiding duplicates
+        const firstPlaylist = playlists[0];
+        const existingSongIndex = firstPlaylist.songs.findIndex((s: any) => s.id === selectedSongForOptions.id);
+        
+        if (existingSongIndex === -1) {
+          // Song doesn't exist, add to top
+          firstPlaylist.songs.unshift(selectedSongForOptions);
+          console.log(`Added "${selectedSongForOptions.title}" to playlist "${firstPlaylist.name}"`);
+        } else {
+          // Song already exists, move to top
+          const song = firstPlaylist.songs.splice(existingSongIndex, 1)[0];
+          firstPlaylist.songs.unshift(song);
+          console.log(`Moved "${selectedSongForOptions.title}" to top of playlist "${firstPlaylist.name}"`);
+        }
+      }
+      
+      // Save to AsyncStorage
+      await AsyncStorage.setItem("user_playlists", JSON.stringify(playlists));
+    } catch (error) {
+      console.error("Error adding song to playlist:", error);
+    }
+    
+    closeSongOptions();
+  };
+
+  const handleGoToArtist = () => {
+    console.log('Go to artist:', selectedSongForOptions);
+    // TODO: Navigate to artist page
+    closeSongOptions();
+  };
+
+  const handleAddToQueue = () => {
+    console.log('Add to queue:', selectedSongForOptions?.title);
+    // TODO: Implement add to queue functionality
+    closeSongOptions();
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -189,88 +213,78 @@ export default function HomeScreen() {
 
           {selectedFilter === "All" && (
             <>
-              <View style={styles.pinnedGrid}>
-                {pinnedTiles.map((tile) => (
-                  <Pressable
-                    key={tile.id}
-                    style={[styles.pinnedCard, { backgroundColor: colors.card }]}
-                  >
-                    <Image source={{ uri: tile.artwork }} style={styles.pinnedArt} />
-                    <View style={styles.pinnedCopy}>
-                      <Text
-                        numberOfLines={1}
-                        style={[styles.pinnedTitle, { color: colors.text }]}
-                      >
-                        {tile.title}
-                      </Text>
-                      <Text
-                        numberOfLines={1}
-                        style={[styles.pinnedSubtitle, { color: colors.subText }]}
-                      >
-                        {tile.subtitle}
-                      </Text>
-                    </View>
-                  </Pressable>
-                ))}
+              {/* Start listening section */}
+              <View style={styles.section}>
+                <Text style={[styles.sectionSubtitle, { color: colors.subText }]}>
+                  Jump into a session based on your tastes
+                </Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Start listening
+                </Text>
+                <View style={styles.horizontalSongList}>
+                  {startListeningSongs.map((song) => {
+                    const artist = artists.find(a => a.songs.some(s => s.id === song.id));
+                    const profileImage = getArtistProfileImage(artist?.name || "");
+                    return (
+                      <View key={song.id} style={styles.horizontalSongCard}>
+                        {profileImage && <Image source={profileImage} style={styles.songProfileImage} />}
+                        <View style={styles.songInfo}>
+                          <Text style={[styles.songTitle, { color: colors.text }]}>{song.title}</Text>
+                          <Text style={[styles.songArtist, { color: colors.subText }]}>{artist?.name}</Text>
+                        </View>
+                        <View style={styles.songActions}>
+                          <ThreeDotButton onPress={() => handleSongOptions(song)} />
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
 
+              {/* To get you started section */}
               <View style={styles.section}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Pre-save upcoming releases
+                  To get you started
                 </Text>
-                <View style={styles.releaseGrid}>
-                  {upcomingReleases.map((release) => (
-                    <Pressable
-                      key={release.id}
-                      style={[styles.releaseCard, { backgroundColor: colors.card }]}
-                      onPress={() => handleNavigate("/premium")}
-                    >
-                      <Image
-                        source={{ uri: release.artwork }}
-                        style={styles.releaseArt}
-                      />
-                      <Text style={[styles.releaseTitle, { color: colors.text }]}>
-                        {release.title}
-                      </Text>
-                      <Text
-                        style={[styles.releaseSubtitle, { color: colors.subText }]}
-                      >
-                        {release.subtitle}
-                      </Text>
+                <FlatList
+                  data={getRandomSongs(6)}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => {
+                    const artist = artists.find(a => a.songs.some(s => s.id === item.id));
+                    const profileImage = getArtistProfileImage(artist?.name || "");
+                    return (
+                      <Pressable style={[styles.recommendedSongCard, { backgroundColor: colors.card }]}>
+                        {profileImage && <Image source={profileImage} style={styles.recommendedSongImage} />}
+                        <Text style={styles.recommendedArtistName}>{artist?.name}</Text>
+                      </Pressable>
+                    );
+                  }}
+                  contentContainerStyle={styles.songListContainer}
+                />
+              </View>
+
+              {/* More like Weeknd section */}
+              <View style={styles.section}>
+                <View style={styles.artistHeader}>
+                  <Image source={require("../../assets/artist/Weeknd.png")} style={styles.artistProfileImageSmall} />
+                  <View style={styles.artistTextContainer}>
+                    <Text style={[styles.moreLikeText, { color: colors.subText }]}>More like</Text>
+                    <Text style={[styles.artistName, { color: colors.text }]}>The Weeknd</Text>
+                  </View>
+                </View>
+                <View style={styles.artistSongs}>
+                  {weekndSongs.map((song) => (
+                    <Pressable key={song.id} style={[styles.weekndSongCard, { backgroundColor: colors.card }]}>
+                      <Image source={require("../../assets/artist/Weeknd.png")} style={styles.weekndSongImage} />
+                      <Text style={styles.weekndSongTitle}>{song.title}</Text>
                     </Pressable>
                   ))}
                 </View>
               </View>
 
-              <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Jump back in</Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.horizontalList}
-                >
-                  {jumpBackIn.map((mix) => (
-                    <Pressable
-                      key={mix.id}
-                      style={[styles.jumpCard, { backgroundColor: colors.card }]}
-                      onPress={() => handleNavigate("/library")}
-                    >
-                      <Image source={{ uri: mix.artwork }} style={styles.jumpArt} />
-                      <View style={styles.jumpCopy}>
-                        <Text style={[styles.jumpTitle, { color: colors.text }]}>
-                          {mix.title}
-                        </Text>
-                        <Text
-                          style={[styles.jumpSubtitle, { color: colors.subText }]}
-                        >
-                          {mix.subtitle}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  ))}
-                </ScrollView>
-              </View>
-            </>
+                          </>
           )}
 
           {selectedFilter === "Music" && (
@@ -299,6 +313,52 @@ export default function HomeScreen() {
         onClose={closeSideNav}
         slideAnimation={slideAnimation}
       />
+
+      {/* Song Options Modal */}
+      <Modal
+        visible={showSongOptions}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeSongOptions}
+      >
+        <Pressable style={styles.modalOverlay} onPress={closeSongOptions}>
+          <View style={styles.songOptionsModal}>
+            <View style={styles.songOptionsHeader}>
+                <View style={styles.headerSpacer} />
+              </View>
+            
+            {selectedSongForOptions && (
+              <View style={styles.selectedSongInModal}>
+                <Image source={getArtistProfileImage(artists.find(a => a.songs.some(s => s.id === selectedSongForOptions.id))?.name || "")} style={styles.songProfileImage} />
+                <View style={styles.songInfo}>
+                  <Text style={[styles.songTitle, { color: '#fff' }]}>{selectedSongForOptions.title}</Text>
+                  <Text style={[styles.songArtist, { color: '#b3b3b3' }]}>{artists.find(a => a.songs.some(s => s.id === selectedSongForOptions.id))?.name}</Text>
+                </View>
+                <TouchableOpacity onPress={closeSongOptions}>
+                  <Ionicons name="close" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            <View style={styles.songOptionsList}>
+              <TouchableOpacity style={styles.songOptionItem} onPress={handleAddToPlaylist}>
+                <Ionicons name="add-circle-outline" size={24} color="#1DB954" />
+                <Text style={styles.songOptionText}>Add to playlist</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.songOptionItem} onPress={handleGoToArtist}>
+                <Ionicons name="person-outline" size={24} color="#fff" />
+                <Text style={styles.songOptionText}>Go to artist</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.songOptionItem} onPress={handleAddToQueue}>
+                <Ionicons name="add-circle-outline" size={24} color="#1DB954" />
+                <Text style={styles.songOptionText}>Add to queue</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -313,7 +373,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 40,
-    paddingBottom: 32,
+    paddingBottom: 150,
     gap: 28,
   },
   header: {
@@ -380,7 +440,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: '700',
+  },
+  sectionSubtitle: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    marginBottom: 2,
   },
   releaseGrid: {
     flexDirection: "row",
@@ -428,5 +493,195 @@ const styles = StyleSheet.create({
   },
   jumpSubtitle: {
     fontSize: 13,
+  },
+  // New styles for song cards
+  songListContainer: {
+    paddingHorizontal: 0,
+    gap: 12,
+  },
+  songCard: {
+    width: 200,
+    borderRadius: 12,
+    padding: 16,
+    marginRight: 12,
+  },
+  songInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  songTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  songArtist: {
+    fontSize: 14,
+  },
+  horizontalSongList: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+  horizontalSongCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    padding: 10,
+    gap: 10,
+    backgroundColor: 'transparent',
+  },
+  songProfileImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 4,
+  },
+  songActions: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  recommendedSongCard: {
+    width: 140,
+    borderRadius: 12,
+    marginRight: 12,
+    position: 'relative',
+  },
+  recommendedSongImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 8,
+  },
+  recommendedArtistName: {
+    fontSize: 14,
+    fontWeight: '500',
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    color: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  // Weeknd section styles
+  artistHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  artistProfileImageSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  artistTextContainer: {
+    flex: 1,
+  },
+  moreLikeText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  artistName: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  artistSongs: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  weekndSongCard: {
+    width: 140,
+    borderRadius: 12,
+    marginRight: 12,
+    position: 'relative',
+  },
+  weekndSongImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 8,
+  },
+  weekndSongTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    position: 'absolute',
+    bottom: -20,
+    left: 0,
+    color: '#b3b3b3',
+  },
+  // Artist section styles
+  artistSection: {
+    gap: 16,
+  },
+  artistProfileImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  artistSongCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 8,
+    padding: 12,
+    gap: 12,
+  },
+  artistSongImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+  },
+  artistSongInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  songOptionsModal: {
+    backgroundColor: '#282828',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 10,
+  },
+  songOptionsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
+  },
+  songOptionsTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+    flex: 1,
+  },
+  headerSpacer: {
+    flex: 1,
+  },
+  selectedSongInModal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  songOptionsList: {
+    paddingHorizontal: 20,
+  },
+  songOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    gap: 16,
+  },
+  songOptionText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
