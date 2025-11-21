@@ -11,8 +11,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-import TabBar from "../components/TabBar";
-import { useTheme } from "../hooks/useTheme";
+import TabBar from "../../components/TabBar";
+import { useTheme } from "../../hooks/useTheme";
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
@@ -44,7 +44,7 @@ export default function SearchScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView
@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
+    paddingTop: 60,
     paddingBottom: 32,
     gap: 24,
   },

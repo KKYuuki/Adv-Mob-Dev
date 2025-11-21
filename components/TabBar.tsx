@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
 import type { ComponentProps } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
+import { BlurView } from "expo-blur";
 import { useTheme } from "../hooks/useTheme";
 
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
@@ -36,7 +37,7 @@ const tabs = [
     icon: "card-outline",
     activeIcon: "card",
   },
-] as const satisfies ReadonlyArray<TabConfig>;
+] as const satisfies readonly TabConfig[];
 
 export default function TabBar() {
   const pathname = usePathname();
@@ -44,9 +45,10 @@ export default function TabBar() {
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: colors.secondary }]}>
+    <BlurView intensity={40} tint="dark" style={styles.container}>
       {tabs.map((tab) => {
         const isActive = pathname === tab.path;
+
         return (
           <Pressable
             key={tab.key}
@@ -59,16 +61,22 @@ export default function TabBar() {
           >
             <Ionicons
               name={isActive ? tab.activeIcon : tab.icon}
-              size={22}
+              size={28}
               color={isActive ? colors.primary : colors.subText}
             />
-            <Text style={[styles.label, { color: isActive ? colors.text : colors.subText }]}>
+
+            <Text
+              style={[
+                styles.label,
+                { color: isActive ? colors.text : colors.subText },
+              ]}
+            >
               {tab.label}
             </Text>
           </Pressable>
         );
       })}
-    </View>
+    </BlurView>
   );
 }
 
@@ -78,7 +86,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 10,
     paddingBottom: 18,
-    borderTopWidth: StyleSheet.hairlineWidth,
+
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+
+    backgroundColor: "rgba(0,0,0,0.3)", // adds slight transparency
   },
   tab: {
     flex: 1,
@@ -86,7 +99,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   label: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

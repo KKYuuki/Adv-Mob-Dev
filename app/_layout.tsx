@@ -1,99 +1,38 @@
-import "react-native-gesture-handler";
-
-import { Ionicons } from "@expo/vector-icons";
-import { Drawer } from "expo-router/drawer";
-import type { ComponentProps } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Stack } from "expo-router";
 import { Provider } from "react-redux";
 import { store } from "../store";
+import { useTheme } from "../hooks/useTheme";
+import { StatusBar } from "expo-status-bar";
+import { AuthProvider } from "../contexts/AuthContext";
 
-type IoniconName = ComponentProps<typeof Ionicons>["name"];
+function RootLayoutNav() {
+  const { isDarkMode } = useTheme();
 
-type DrawerIconProps = {
-  color?: string;
-  size?: number;
-};
-
-const drawerScreens = [
-  { name: "home", title: "Home", icon: "home-outline" },
-  { name: "search", title: "Search", icon: "search-outline" },
-  { name: "library", title: "Your Library", icon: "albums-outline" },
-  { name: "playlists", title: "Playlists", icon: "musical-notes-outline" },
-  { name: "playlist", title: "Playlist Builder", icon: "build-outline" },
-  { name: "profile-creation", title: "Create Profile", icon: "create-outline" },
-  { name: "premium", title: "Premium", icon: "card-outline" },
-  { name: "profile", title: "Profile", icon: "person-outline" },
-  { name: "settings", title: "Settings", icon: "settings-outline" },
-] as const satisfies ReadonlyArray<{
-  name: string;
-  title: string;
-  icon: IoniconName;
-}>;
+  return (
+    <>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/signup" options={{ headerShown: false }} />
+        <Stack.Screen name="profile" options={{ headerShown: false }} />
+        <Stack.Screen name="profile/edit" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </>
+  );
+}
 
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Drawer
-          screenOptions={{
-            headerShown: false,
-            drawerType: "slide",
-            swipeEnabled: true,
-            swipeEdgeWidth: 70,
-            swipeMinDistance: 20,
-            drawerActiveTintColor: "#1DB954",
-            drawerInactiveTintColor: "#d4d4d4",
-            overlayColor: "rgba(0,0,0,0.45)",
-            drawerStyle: {
-              backgroundColor: "#181818",
-              width: 260,
-            },
-            sceneContainerStyle: {
-              backgroundColor: "#000",
-            },
-          }}
-        >
-          <Drawer.Screen
-            name="index"
-            options={{
-              drawerItemStyle: { display: "none" },
-            }}
-          />
-
-          {drawerScreens.map(({ name, title, icon }) => (
-            <Drawer.Screen
-              key={name}
-              name={name}
-              options={{
-                title,
-                drawerLabel: title,
-                drawerIcon: ({ color, size }: DrawerIconProps) => (
-                  <Ionicons name={icon} size={size ?? 20} color={color ?? "#fff"} />
-                ),
-              }}
-            />
-          ))}
-
-          <Drawer.Screen
-            name="login"
-            options={{
-              drawerItemStyle: { display: "none" },
-            }}
-          />
-          <Drawer.Screen
-            name="signup"
-            options={{
-              drawerItemStyle: { display: "none" },
-            }}
-          />
-          <Drawer.Screen
-            name="playlist/[id]"
-            options={{
-              drawerItemStyle: { display: "none" },
-            }}
-          />
-        </Drawer>
-      </GestureHandlerRootView>
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
     </Provider>
   );
 }

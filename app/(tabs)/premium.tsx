@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
-import TabBar from "../components/TabBar";
-import { useTheme } from "../hooks/useTheme";
+import TabBar from "../../components/TabBar";
+import { useTheme } from "../../hooks/useTheme";
 
 const benefits = [
   { id: "1", label: "Ad-free music listening", icon: "volume-high-outline" },
@@ -13,7 +13,7 @@ const benefits = [
 export default function PremiumScreen() {
   const { colors } = useTheme();
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle={colors.text === '#FFFFFF' ? 'light-content' : 'dark-content'} />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -58,6 +58,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
+    paddingTop: 60,
     paddingBottom: 32,
     gap: 24,
   },

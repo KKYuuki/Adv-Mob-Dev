@@ -1,6 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
+  Alert,
   Image,
   Pressable,
   SafeAreaView,
@@ -11,12 +14,134 @@ import {
   View,
 } from "react-native";
 import { getPlaylistById } from "../../data/playlists";
-import { useTheme } from '../hooks/useTheme';
+
+interface UserPlaylist {
+  id: string;
+  name: string;
+  createdAt: string;
+  songs: any[];
+}
 
 export default function PlaylistDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const [userPlaylist, setUserPlaylist] = useState<UserPlaylist | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const handleDeletePlaylist = async () => {
+    Alert.alert(
+      "Delete Playlist",
+      "Are you sure you want to delete this playlist? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Remove playlist from AsyncStorage
+              const existingPlaylists = await AsyncStorage.getItem("user_playlists");
+              if (existingPlaylists) {
+                const playlists = JSON.parse(existingPlaylists);
+                const updatedPlaylists = playlists.filter((p: UserPlaylist) => p.id !== id);
+                await AsyncStorage.setItem("user_playlists", JSON.stringify(updatedPlaylists));
+              }
+              
+              // Navigate back to library
+              router.replace("/(tabs)/library");
+            } catch (error) {
+              console.error("Error deleting playlist:", error);
+            }
+          }
+        },
+      ]
+    );
+  };
+
+  const loadUserPlaylist = useCallback(async () => {
+    try {
+      if (!id) return;
+      
+      // First try to get from user playlists (newly created ones)
+      const existingPlaylists = await AsyncStorage.getItem("user_playlists");
+      if (existingPlaylists) {
+        const playlists = JSON.parse(existingPlaylists);
+        const foundPlaylist = playlists.find((p: UserPlaylist) => p.id === id);
+        if (foundPlaylist) {
+          setUserPlaylist(foundPlaylist);
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Fallback to existing data
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading playlist:", error);
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    loadUserPlaylist();
+  }, [loadUserPlaylist]);
+
   const playlist = typeof id === "string" ? getPlaylistById(id) : undefined;
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" />
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (userPlaylist) {
+    // Show newly created playlist (blank for now)
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" />
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <Pressable style={styles.iconButton} onPress={() => router.replace("/(tabs)/library")}>
+              <Ionicons name="chevron-back" size={20} color="#fff" />
+            </Pressable>
+            <Pressable style={styles.deleteButton} onPress={handleDeletePlaylist}>
+              <Ionicons name="trash" size={20} color="#fff" />
+            </Pressable>
+          </View>
+
+          <View style={styles.heroArt}>
+            <Ionicons name="musical-notes" size={80} color="#1DB954" />
+          </View>
+
+          <View style={styles.metaBlock}>
+            <Text style={styles.title}>{userPlaylist.name}</Text>
+            <Text style={styles.subtitle}>Your personal playlist</Text>
+            <Text style={styles.meta}>
+              0 songs · Created by you
+            </Text>
+          </View>
+
+          <View style={styles.trackHeader}>
+            <Text style={styles.trackHeaderLabel}>Tracks</Text>
+            <Text style={styles.trackCount}>0 songs</Text>
+          </View>
+
+          <View style={styles.emptyState}>
+            <Ionicons name="add-circle" size={48} color="#1DB954" />
+            <Text style={styles.emptyText}>Add songs to get started</Text>
+            <Pressable style={styles.addButton}>
+              <Text style={styles.addButtonText}>Add Songs</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   if (!playlist) {
     return (
@@ -37,7 +162,7 @@ export default function PlaylistDetailScreen() {
       <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Pressable style={styles.iconButton} onPress={() => router.back()}>
+          <Pressable style={styles.iconButton} onPress={() => router.replace("/(tabs)/library")}>
             <Ionicons name="chevron-back" size={20} color="#fff" />
           </Pressable>
           <Pressable style={styles.iconButton} onPress={() => router.push("/playlists" as never)}>
@@ -83,6 +208,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#050505",
+    paddingTop: 60,
   },
   content: {
     paddingBottom: 40,
@@ -100,6 +226,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#1f1f1f",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FF3B30",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -206,5 +340,37 @@ const styles = StyleSheet.create({
   retryLabel: {
     color: "#fff",
     fontWeight: "700",
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    fontSize: 18,
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+    gap: 16,
+  },
+  emptyText: {
+    color: "#b3b3b3",
+    fontSize: 18,
+    textAlign: "center",
+  },
+  addButton: {
+    backgroundColor: "#1DB954",
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  addButtonText: {
+    color: "#000000",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

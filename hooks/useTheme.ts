@@ -47,7 +47,7 @@ export const useTheme = () => {
   const isLightMode = mode === 'light';
 
   const colors = {
-    background: isDarkMode ? '#121212' : '#FFFFFF',
+    background: isDarkMode ? '#000000' : '#FFFFFF',
     card: isDarkMode ? '#1E1E1E' : '#F6F6F6',
     text: isDarkMode ? '#FFFFFF' : '#000000',
     subText: isDarkMode ? '#B3B3B3' : '#535353',
