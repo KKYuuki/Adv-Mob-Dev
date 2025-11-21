@@ -30,13 +30,6 @@ const tabs = [
     icon: "albums-outline",
     activeIcon: "albums",
   },
-  {
-    key: "premium",
-    label: "Premium",
-    path: "/premium",
-    icon: "card-outline",
-    activeIcon: "card",
-  },
 ] as const satisfies readonly TabConfig[];
 
 export default function TabBar() {

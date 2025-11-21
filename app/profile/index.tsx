@@ -26,7 +26,7 @@ interface UserPlaylist {
 export default function ProfileScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const [userPlaylists, setUserPlaylists] = useState<UserPlaylist[]>([]);
   
   useEffect(() => {
@@ -53,12 +53,12 @@ export default function ProfileScreen() {
 
   const renderPlaylistItem = ({ item }: { item: UserPlaylist }) => (
     <Pressable 
-      style={styles.playlistItem} 
+      style={[styles.playlistItem, { backgroundColor: colors.card }]} 
       onPress={() => router.push(`/playlist/${item.id}` as never)}
       android_ripple={{ color: 'rgba(255, 255, 255, 0.1)', borderless: false }}
     >
       <View style={[styles.playlistIcon, { backgroundColor: colors.primary }]}>
-        <Ionicons name="musical-notes" size={48} color="#000000" />
+        <Ionicons name="musical-notes" size={48} color={colors.background} />
       </View>
       <View style={styles.playlistInfo}>
         <Text style={[styles.playlistName, { color: colors.text }]}>{item.name}</Text>
@@ -68,72 +68,80 @@ export default function ProfileScreen() {
   );
 
   const renderHeader = () => (
-    <LinearGradient
-      colors={["#1DB954", "#000000"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      locations={[0.3, 1]}
-      style={styles.headerGradient}
-    >
-      <View style={styles.header}>
-        <View style={styles.profileSection}>
-          {user?.profilePicture ? (
-            <Image source={{ uri: user.profilePicture }} style={styles.profileImage} />
-          ) : (
-            <View style={[styles.profileInitial, { backgroundColor: colors.primary }]}>
-              <Text style={[styles.initialText, { color: colors.background }]}>
-                {user?.name?.charAt(0)?.toUpperCase() || "U"}
-              </Text>
-            </View>
-          )}
-          <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: colors.text }]}>{user?.name || "User"}</Text>
-            <Text style={[styles.profileEmail, { color: colors.subText }]}>{user?.email || "user@example.com"}</Text>
+    <View style={styles.header}>
+      <View style={styles.profileSection}>
+        {user?.profilePicture ? (
+          <Image source={{ uri: user.profilePicture }} style={styles.profileImage} />
+        ) : (
+          <View style={[styles.profileInitial, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.initialText, { color: colors.background }]}>
+              {user?.name?.charAt(0)?.toUpperCase() || "U"}
+            </Text>
           </View>
+        )}
+        <View style={styles.profileInfo}>
+          <Text style={[styles.profileName, { color: colors.text }]}>{user?.name || "User"}</Text>
+          <Text style={[styles.profileEmail, { color: colors.subText }]}>{user?.email || "user@example.com"}</Text>
+        </View>
+        <View style={styles.actionButtons}>
           <Pressable 
-            style={[styles.editButton, { backgroundColor: colors.primary }]}
+            style={[styles.editButton, { backgroundColor: '#FFFFFF' }]}
             onPress={() => router.push("/profile/edit")}
           >
-            <Ionicons name="pencil" size={16} color="#000" />
-            <Text style={styles.editButtonText}>Edit</Text>
+            <Ionicons name="pencil" size={16} color="#000000" />
+            <Text style={[styles.editButtonText, { color: '#000000' }]}>Edit</Text>
+          </Pressable>
+          <Pressable 
+            style={[styles.settingsButton, { backgroundColor: colors.card }]}
+            onPress={() => router.push("/settings/theme")}
+          >
+            <Ionicons name="settings-outline" size={16} color={colors.text} />
           </Pressable>
         </View>
-        
-        <View style={styles.statsSection}>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text }]}>234</Text>
-            <Text style={[styles.statLabel, { color: colors.subText }]}>Followers</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text }]}>45</Text>
-            <Text style={[styles.statLabel, { color: colors.subText }]}>Following</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: colors.text }]}>{userPlaylists.length}</Text>
-            <Text style={[styles.statLabel, { color: colors.subText }]}>Playlists</Text>
-          </View>
+      </View>
+      
+      <View style={styles.statsSection}>
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.text }]}>234</Text>
+          <Text style={[styles.statLabel, { color: colors.subText }]}>Followers</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.text }]}>45</Text>
+          <Text style={[styles.statLabel, { color: colors.subText }]}>Following</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.text }]}>{userPlaylists.length}</Text>
+          <Text style={[styles.statLabel, { color: colors.subText }]}>Playlists</Text>
         </View>
       </View>
-    </LinearGradient>
+    </View>
   );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.container}>
-        <Pressable style={styles.backButton} onPress={() => router.push("/home")}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </Pressable>
-        <FlatList
-          data={userPlaylists}
-          renderItem={renderPlaylistItem}
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={renderHeader}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          style={styles.playlistList}
-        />
-      </View>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <LinearGradient
+        colors={isDarkMode ? ["#1DB954", "#000000"] : ["#1DB954", "#FFFFFF"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        locations={[0.3, 1]}
+        style={styles.fullPageGradient}
+      >
+        <View style={styles.container}>
+          <Pressable style={styles.backButton} onPress={() => router.push("/home")}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </Pressable>
+          <FlatList
+            data={userPlaylists}
+            renderItem={renderPlaylistItem}
+            keyExtractor={(item) => item.id}
+            ListHeaderComponent={renderHeader}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            style={styles.playlistList}
+          />
+        </View>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -141,7 +149,9 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000000',
+  },
+  fullPageGradient: {
+    flex: 1,
   },
   container: {
     flex: 1,
@@ -153,17 +163,15 @@ const styles = StyleSheet.create({
     zIndex: 1,
     padding: 8,
   },
-  headerGradient: {
-    paddingTop: 100,
+  header: {
+    paddingTop: 120,
     paddingHorizontal: 24,
     paddingBottom: 32,
   },
-  header: {
-    flex: 1,
-  },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 40,
     paddingTop: 0,
+    paddingHorizontal: 0,
   },
   playlistList: {
     flex: 1,
@@ -174,19 +182,19 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
   profileInitial: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
   },
   initialText: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: "700",
   },
   profileInfo: {
@@ -210,9 +218,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   editButtonText: {
-    color: "#000",
     fontSize: 14,
     fontWeight: "600",
+  },
+  actionButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  settingsButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
   statsSection: {
     flexDirection: "row",
@@ -235,11 +254,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 24,
-    paddingVertical: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    paddingVertical: 16,
     marginHorizontal: 24,
-    marginBottom: 8,
-    borderRadius: 8,
+    marginBottom: 12,
+    borderRadius: 12,
   },
   playlistIcon: {
     width: 128,

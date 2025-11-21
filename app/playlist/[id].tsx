@@ -20,6 +20,7 @@ import {
 } from "react-native";
 import { getPlaylistById } from "../../data/playlists";
 import { artists, Song, Artist } from "../../data/artists";
+import { useTheme } from "../../hooks/useTheme";
 
 interface UserPlaylist {
   id: string;
@@ -33,6 +34,7 @@ interface UserPlaylist {
 export default function PlaylistDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const { colors, isDarkMode } = useTheme();
   const [userPlaylist, setUserPlaylist] = useState<UserPlaylist | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -307,10 +309,10 @@ export default function PlaylistDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" />
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading...</Text>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+          <Text style={[styles.loadingText, { color: colors.text }]}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -319,49 +321,49 @@ export default function PlaylistDetailScreen() {
   if (userPlaylist) {
     // Show newly created playlist (blank for now)
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" />
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         <LinearGradient
-          colors={['#404040', '#000000']}
+          colors={[colors.card, colors.background]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={styles.gradientContainer}
         >
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Pressable style={styles.iconButton} onPress={() => router.replace("/(tabs)/library")}>
-              <Ionicons name="chevron-back" size={20} color="#fff" />
+            <Pressable style={[styles.iconButton, { backgroundColor: colors.card }]} onPress={() => router.replace("/(tabs)/library")}>
+              <Ionicons name="chevron-back" size={20} color={colors.text} />
             </Pressable>
           </View>
 
-          <View style={styles.heroArt}>
-            <Ionicons name="musical-notes" size={120} color="#1DB954" />
+          <View style={[styles.heroArt, { backgroundColor: colors.secondary }]}>
+            <Ionicons name="musical-notes" size={120} color={colors.primary} />
           </View>
 
           <View style={styles.metaBlock}>
             <View style={styles.titleRow}>
-              <Text style={[styles.title, styles.underlineTitle]}>{userPlaylist.name}</Text>
-              <Pressable style={styles.changeButton} onPress={openEditModal}>
+              <Text style={[styles.title, styles.underlineTitle, { color: colors.text }]}>{userPlaylist.name}</Text>
+              <Pressable style={[styles.changeButton, { backgroundColor: colors.primary }]} onPress={openEditModal}>
                 <Text style={styles.changeButtonText}>Change</Text>
               </Pressable>
             </View>
-            <Text style={styles.subtitle}>Your personal playlist</Text>
-            <Text style={styles.meta}>
+            <Text style={[styles.subtitle, { color: colors.subText }]}>Your personal playlist</Text>
+            <Text style={[styles.meta, { color: colors.subText }]}>
               {userPlaylist.songs.length} songs · Created by you
             </Text>
           </View>
 
           <View style={styles.addButtonContainer}>
             {selectedSong ? (
-              <View style={styles.selectedSongContainer}>
+              <View style={[styles.selectedSongContainer, { backgroundColor: colors.card }]}>
                 <Image source={selectedSong.profileImage} style={styles.selectedSongImage} />
                 <View style={styles.selectedSongInfo}>
-                  <Text style={styles.selectedSongTitle}>{selectedSong.title}</Text>
-                  <Text style={styles.selectedSongArtist}>{selectedSong.artist}</Text>
+                  <Text style={[styles.selectedSongTitle, { color: colors.text }]}>{selectedSong.title}</Text>
+                  <Text style={[styles.selectedSongArtist, { color: colors.subText }]}>{selectedSong.artist}</Text>
                 </View>
               </View>
             ) : (
-              <Pressable style={styles.addButton} onPress={() => {}}>
+              <Pressable style={[styles.addButton, { backgroundColor: colors.primary }]} onPress={() => {}}>
                 <Text style={styles.addButtonText}>Add to this playlist</Text>
               </Pressable>
             )}
@@ -369,17 +371,17 @@ export default function PlaylistDetailScreen() {
 
           {userPlaylist.songs.length > 0 && (
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Playlist songs</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Playlist songs</Text>
             </View>
           )}
 
           <View style={styles.artistFoldersContainer}>
             {userPlaylist.songs.map((song, index) => (
-              <View key={song.id} style={styles.playlistSongItem}>
+              <View key={song.id} style={[styles.playlistSongItem, { backgroundColor: colors.card }]}>
                 <Image source={song.profileImage} style={styles.playlistSongImage} />
                 <View style={styles.playlistSongInfo}>
-                  <Text style={styles.playlistSongTitle}>{song.title}</Text>
-                  <Text style={styles.playlistSongArtist}>{song.artist}</Text>
+                  <Text style={[styles.playlistSongTitle, { color: colors.text }]}>{song.title}</Text>
+                  <Text style={[styles.playlistSongArtist, { color: colors.subText }]}>{song.artist}</Text>
                 </View>
                 <ThreeDotButton onPress={() => handleSongOptions(song)} />
               </View>
@@ -387,21 +389,21 @@ export default function PlaylistDetailScreen() {
           </View>
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recommended songs</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recommended songs</Text>
           </View>
 
           <View style={styles.artistFoldersContainer}>
             {recommendedSongs.map((song) => (
-              <View key={song.id} style={styles.artistFolder}>
+              <View key={song.id} style={[styles.artistFolder, { backgroundColor: colors.card }]}>
                 <View style={styles.artistInfo}>
                   <Image source={song.profileImage} style={styles.artistImage} />
                   <View style={styles.artistDetails}>
-                    <Text style={styles.songName}>{song.title}</Text>
-                    <Text style={styles.artistName}>{song.artist}</Text>
+                    <Text style={[styles.songName, { color: colors.text }]}>{song.title}</Text>
+                    <Text style={[styles.artistName, { color: colors.subText }]}>{song.artist}</Text>
                   </View>
                 </View>
-                <TouchableOpacity style={styles.addSongButton} onPress={() => handleAddSong(song)}>
-                  <Ionicons name="add" size={20} color="#1DB954" />
+                <TouchableOpacity style={[styles.addSongButton, { backgroundColor: colors.secondary }]} onPress={() => handleAddSong(song)}>
+                  <Ionicons name="add" size={20} color={colors.primary} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -546,11 +548,11 @@ export default function PlaylistDetailScreen() {
 
   if (!playlist) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" />
-        <View style={styles.fallbackContainer}>
-          <Text style={styles.fallbackText}>Playlist not found.</Text>
-          <Pressable style={styles.retryButton} onPress={() => router.back()}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <View style={[styles.fallbackContainer, { backgroundColor: colors.background }]}>
+          <Text style={[styles.fallbackText, { color: colors.text }]}>Playlist not found.</Text>
+          <Pressable style={[styles.retryButton, { backgroundColor: colors.primary }]} onPress={() => router.back()}>
             <Text style={styles.retryLabel}>Go back</Text>
           </Pressable>
         </View>
@@ -559,44 +561,44 @@ export default function PlaylistDetailScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Pressable style={styles.iconButton} onPress={() => router.replace("/(tabs)/library")}>
-            <Ionicons name="chevron-back" size={20} color="#fff" />
+          <Pressable style={[styles.iconButton, { backgroundColor: colors.card }]} onPress={() => router.replace("/(tabs)/library")}>
+            <Ionicons name="chevron-back" size={20} color={colors.text} />
           </Pressable>
-          <Pressable style={styles.iconButton} onPress={() => router.push("/playlists" as never)}>
-            <Ionicons name="list" size={20} color="#fff" />
+          <Pressable style={[styles.iconButton, { backgroundColor: colors.card }]} onPress={() => router.push("/playlists" as never)}>
+            <Ionicons name="list" size={20} color={colors.text} />
           </Pressable>
         </View>
 
         <Image source={{ uri: playlist.artwork }} style={styles.heroArt} />
 
         <View style={styles.metaBlock}>
-          <Text style={styles.title}>{playlist.title}</Text>
-          <Text style={styles.subtitle}>{playlist.description}</Text>
-          <Text style={styles.meta}>
+          <Text style={[styles.title, { color: colors.text }]}>{playlist.title}</Text>
+          <Text style={[styles.subtitle, { color: colors.subText }]}>{playlist.description}</Text>
+          <Text style={[styles.meta, { color: colors.subText }]}>
             {playlist.followers} followers · {playlist.mood}
           </Text>
         </View>
 
         <View style={styles.trackHeader}>
-          <Text style={styles.trackHeaderLabel}>Tracks</Text>
-          <Text style={styles.trackCount}>{playlist.tracks.length} songs</Text>
+          <Text style={[styles.trackHeaderLabel, { color: colors.text }]}>Tracks</Text>
+          <Text style={[styles.trackCount, { color: colors.subText }]}>{playlist.tracks.length} songs</Text>
         </View>
 
-        <View style={styles.trackList}>
+        <View style={[styles.trackList, { backgroundColor: colors.background }]}>
           {playlist.tracks.map((track, index) => (
-            <View key={track.id} style={styles.trackRow}>
-              <View style={styles.trackIndexCircle}>
-                <Text style={styles.trackIndexText}>{index + 1}</Text>
+            <View key={track.id} style={[styles.trackRow, { backgroundColor: colors.card }]}>
+              <View style={[styles.trackIndexCircle, { backgroundColor: colors.secondary }]}>
+                <Text style={[styles.trackIndexText, { color: colors.text }]}>{index + 1}</Text>
               </View>
               <View style={styles.trackCopy}>
-                <Text style={styles.trackTitle}>{track.title}</Text>
-                <Text style={styles.trackArtist}>{track.artist}</Text>
+                <Text style={[styles.trackTitle, { color: colors.text }]}>{track.title}</Text>
+                <Text style={[styles.trackArtist, { color: colors.subText }]}>{track.artist}</Text>
               </View>
-              <Text style={styles.trackDuration}>{track.duration}</Text>
+              <Text style={[styles.trackDuration, { color: colors.subText }]}>{track.duration}</Text>
             </View>
           ))}
         </View>
