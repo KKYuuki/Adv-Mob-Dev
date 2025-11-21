@@ -12,15 +12,55 @@ import {
   Text,
   TextInput,
   View,
+  Modal,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../../contexts/AuthContext";
+import { CameraWithFilters } from "../../components/CameraWithFilters";
 
 export default function ProfileScreen() {
   const { user, updateProfile, logout } = useAuth();
   const [name, setName] = useState(user?.name || "");
   const [isLoading, setIsLoading] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+
+  const handleCameraCapture = async (photoUri: string) => {
+    try {
+      console.log('Camera captured photo URI:', photoUri);
+      
+      // Use the photo URI directly - React Native Image can handle file URIs
+      await updateProfile(name, photoUri);
+      Alert.alert("Success", "Profile picture updated!");
+      
+      // Close the camera modal after successful update
+      setShowCameraModal(false);
+    } catch (error) {
+      Alert.alert("Error", "Failed to update profile picture");
+      console.error("Camera capture error:", error);
+    }
+  };
+
+  const showImageOptions = () => {
+    Alert.alert(
+      "Profile Photo",
+      "Choose how you'd like to set your profile photo",
+      [
+        {
+          text: "Take Photo",
+          onPress: () => setShowCameraModal(true),
+        },
+        {
+          text: "Choose from Library",
+          onPress: handleImagePicker,
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]
+    );
+  };
 
   const handleImagePicker = async () => {
     try {
@@ -40,18 +80,8 @@ export default function ProfileScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {
-        // Convert image to base64 for storage
-        const base64 = await fetch(result.assets[0].uri)
-          .then(response => response.blob())
-          .then(blob => {
-            return new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onload = () => resolve(reader.result);
-              reader.readAsDataURL(blob);
-            });
-          });
-        
-        await updateProfile(name, base64 as string);
+        // Use the image URI directly - React Native Image can handle file URIs
+        await updateProfile(name, result.assets[0].uri);
         Alert.alert("Success", "Profile picture updated!");
       }
     } catch (error) {
@@ -118,7 +148,7 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.profileSection}>
-            <Pressable onPress={handleImagePicker} style={styles.profileImageContainer}>
+            <Pressable onPress={showImageOptions} style={styles.profileImageContainer}>
               {user.profilePicture ? (
                 <Image source={{ uri: user.profilePicture }} style={styles.profileImage} />
               ) : (
@@ -173,6 +203,17 @@ export default function ProfileScreen() {
           </View>
         </ScrollView>
       </LinearGradient>
+
+      <Modal
+        visible={showCameraModal}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <CameraWithFilters
+          onPhotoCapture={handleCameraCapture}
+          onClose={() => setShowCameraModal(false)}
+        />
+      </Modal>
     </SafeAreaView>
   );
 }

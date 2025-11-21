@@ -24,6 +24,13 @@ const tabs = [
     activeIcon: "search",
   },
   {
+    key: "map",
+    label: "Map",
+    path: "/map",
+    icon: "map-outline",
+    activeIcon: "map",
+  },
+  {
     key: "library",
     label: "Your Library",
     path: "/library",

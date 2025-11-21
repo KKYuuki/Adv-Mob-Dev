@@ -24,7 +24,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
   const filters = useMemo(() => ["All", "Music", "Podcasts"], []);
-  const { colors, isDarkMode, toggleThemeMode } = useTheme();
+  const { colors } = useTheme();
   const { user } = useAuth();
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
   const [sideNavVisible, setSideNavVisible] = useState(false);
@@ -209,17 +209,6 @@ export default function HomeScreen() {
                 );
               })}
             </View>
-
-            <TouchableOpacity 
-              style={[styles.themeToggle, { backgroundColor: colors.card }]}
-              onPress={() => toggleThemeMode(isDarkMode ? 'light' : 'dark')}
-            >
-              <Ionicons 
-                name={isDarkMode ? 'sunny-outline' : 'moon-outline'} 
-                size={20} 
-                color={colors.text} 
-              />
-            </TouchableOpacity>
           </View>
 
           {selectedFilter === "All" && (
